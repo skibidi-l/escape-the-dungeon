@@ -33,13 +33,18 @@ health = 100
 gold = 5
 inventory = []
 
-monster_list = ["skeleton","goblin","zombie"]
-monster_health_list = [30,35,20]
+monster_list = [skeleton_monster,goblin_monster,zombie_monster,DRAGON_monster]
+monster_health_list = [30,35,20,100]
+monster_damage_list = [4,5,6,10]
+skeleton_monster = ("skeleton",30,4)
+goblin_monster = ("goblin",35,5)
+zombie_monster = ("zombie",20,6)
+DRAGON_monster= ("DRAGON",100,10)
 monster_index = random.randint(0,len(monster_list) - 1)
-monster = monster_list[monster_index]
-print(f"welcome to the dungeon dungeoneer, to test your might, you will have to duel...a good ole {monster}!")
-print(f"You have encountered a {monster}!")   
-print(f"⚠️ The {monster} attacks you!⚠️")
+monster_name,monster_health,monster_damage = monster_list[monster_index]
+print(f"welcome to the dungeon dungeoneer, to test your might, you will have to duel...a good ole {monster_name,monster_health,monster_damage}!")
+print(f"You have encountered a {monster_name,monster_health,monster_damage}!")   
+print(f"⚠️ The {monster_name,monster_health,monster_damage} attacks you!⚠️")
 monster_health = 30
 loot_list = ["armor","sword","dagger","staff","mace","axe","armor"]
 while True:
@@ -50,7 +55,7 @@ while True:
         damage = strength + random.randint(1, 6)
         monster_health -= damage
         print(f"You swing your weapon and deal {damage} damage!")
-        print(f"the monster is{monster_health}")
+        print(f"the Monster is{monster_health}")
     elif action == "dodge":
         dodge_chance = agility * 5
         if random.randint(1,100)<= dodge_chance:
@@ -86,6 +91,6 @@ while True:
         if is_dodged == False:
             hit = random.randint(1,6) + 2
             health -= hit
-            print(f"The {monster} brandishes a knife, hitting a mighty swing dealing {hit} your health depleted to {health}")
+            print(f"The {monster_name,monster_health,monster_damage} brandishes a knife, hitting a mighty swing dealing {hit} your health depleted to {health}")
 print("hey man, this game is made as a draft for me coding class so tysm for playin, hope to see ya again!!!😊")
 print(f" you now have {inventory} in your inventory and {gold} gold")
