@@ -28,26 +28,29 @@ else:
     print("you made a wrong move lul, idc if u made it by mistake but since you thought smashing your head on the keyboard was a option your getting the WOMP WOMP class, try not to die!!!")
     player_class = "WOMP WOMP"
     strength, agility, magic = 1, 1, 1
+player = {
+    "name":character_name,
+    "class": player_class,
+    "health": 100,
+    "gold": 5,
+    "inventory": []
+}
 
-health = 100
-gold = 5
-inventory = []
 
-monster_list = [skeleton_monster,goblin_monster,zombie_monster,DRAGON_monster]
-monster_health_list = [30,35,20,100]
-monster_damage_list = [4,5,6,10]
 skeleton_monster = ("skeleton",30,4)
 goblin_monster = ("goblin",35,5)
 zombie_monster = ("zombie",20,6)
 DRAGON_monster= ("DRAGON",100,10)
+monster_list = [skeleton_monster,goblin_monster,zombie_monster,DRAGON_monster]
 monster_index = random.randint(0,len(monster_list) - 1)
 monster_name,monster_health,monster_damage = monster_list[monster_index]
 print(f"welcome to the dungeon dungeoneer, to test your might, you will have to duel...a good ole {monster_name,monster_health,monster_damage}!")
-print(f"You have encountered a {monster_name,monster_health,monster_damage}!")   
-print(f"⚠️ The {monster_name,monster_health,monster_damage} attacks you!⚠️")
-monster_health = 30
+print(f"You have encountered a {monster_name}!")   
+print(f"⚠️ The {monster_name} attacks you!⚠️")
 loot_list = ["armor","sword","dagger","staff","mace","axe","armor"]
 while True:
+    if health <= 0:
+        break
     action = input("Choose action: attack / dodge / spell: ").lower()
     is_dodged = False
     
@@ -84,13 +87,17 @@ while True:
         loot_index = random.randint(0,len(loot_list) - 1)
         loot_gold = random.randint(5,20)
         print(f"you found one {loot_list[loot_index]} and {loot_gold} gold, u RICH now")
-        inventory.append(loot_list[loot_index])
-        gold += loot_gold
+        player["inventory"].append(loot_list[loot_index])
+        player["gold"] += loot_gold
         break
     else:
         if is_dodged == False:
             hit = random.randint(1,6) + 2
             health -= hit
-            print(f"The {monster_name,monster_health,monster_damage} brandishes a knife, hitting a mighty swing dealing {hit} your health depleted to {health}")
-print("hey man, this game is made as a draft for me coding class so tysm for playin, hope to see ya again!!!😊")
-print(f" you now have {inventory} in your inventory and {gold} gold")
+            print(f"The {monster_name} brandishes a knife, hitting a mighty swing dealing {hit} your health depleted to {health}")
+if health <= 0:
+    print("GAME OVER!")
+    print("LOL WOMP WOMP")
+else:
+    print("hey man, this game is made as a draft for me coding class so tysm for playin, hope to see ya again!!!😊")
+    print(f" you now have {player["inventory"]} in your inventory and {player["gold"]} gold")
