@@ -14,24 +14,30 @@ class_choice = input("Enter 1, 2, or 3: ")
 
 if class_choice == "1":
     player_class = "Warrior"
-    strength, agility, magic = 8, 4, 2
+    strength, agility, mind = 8, 4, 2
     print("yes... a gruelsome fighter who shows NO mercy to his enemies!")
 elif class_choice == "2":
     player_class = "Rogue"
-    strength, agility, magic = 4, 8, 2
+    strength, agility, mind = 4, 8, 2
     print("yes...a sneaky assasin that punishes foes for stepping on his shadow!")
 elif class_choice == "3":
     player_class = "Mage"
-    strength, agility, magic = 2, 4, 8
+    strength, agility, mind = 2, 4, 8
     print
 else:
     print("you made a wrong move lul, idc if u made it by mistake but since you thought smashing your head on the keyboard was a option your getting the WOMP WOMP class, try not to die!!!")
     player_class = "WOMP WOMP"
-    strength, agility, magic = 1, 1, 1
+    strength, agility, mind = 1, 1, 1
 player = {
     "name":character_name,
     "class": player_class,
-    "health": 100,
+    "attributes":{
+        "strength": strength,
+        "agility": agility,
+        "mind": mind,
+    },
+    "max_health": 5 * strength,
+    "current_health": 5 * strength,
     "gold": 5,
     "inventory": []
 }
@@ -49,7 +55,7 @@ print(f"You have encountered a {monster_name}!")
 print(f"⚠️ The {monster_name} attacks you!⚠️")
 loot_list = ["armor","sword","dagger","staff","mace","axe","armor"]
 while True:
-    if health <= 0:
+    if player["current_health"] <= 0:
         break
     action = input("Choose action: attack / dodge / spell: ").lower()
     is_dodged = False
@@ -67,10 +73,10 @@ while True:
         else:
             is_dodged = False
             print("ya tried to dodge but had a skill issue,lul")
-            health -= 5
-            print(f"ya got hit, HP remaining:{health}")
+            player["current_health"] -= 5
+            print(f"ya got hit, HP remaining:{player["current_health"]}")
     elif action == "spell":
-        if magic>=6:
+        if mind>=6:
             print("ya cast a powerful fireball")
             monster_health =0
             print("well done ")
@@ -93,9 +99,9 @@ while True:
     else:
         if is_dodged == False:
             hit = random.randint(1,6) + 2
-            health -= hit
-            print(f"The {monster_name} brandishes a knife, hitting a mighty swing dealing {hit} your health depleted to {health}")
-if health <= 0:
+            player["current_health"] -= hit
+            print(f"The {monster_name} brandishes a knife, hitting a mighty swing dealing {hit} your player health depleted to {player["current_health"]}")
+if player["current_health"] <= 0:
     print("GAME OVER!")
     print("LOL WOMP WOMP")
 else:
