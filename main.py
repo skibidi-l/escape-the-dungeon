@@ -1,5 +1,10 @@
 import random
 
+def roll_dice( sides_per_die, number_of_dice=1):
+    sum = 0
+    for _ in range(number_of_dice):
+        sum += random.randint(1, sides_per_die)
+    return sum
 # --- Create Character ---
 print("Welcome to Escape the Dungeon!")
 character_name = input("What is your name, BRAVE adventurer??? ")
@@ -61,13 +66,13 @@ while True:
     is_dodged = False
     
     if action == 'attack':
-        damage = strength + random.randint(1, 6)
+        damage = strength + roll_dice(sides_per_die=6)
         monster_health -= damage
         print(f"You swing your weapon and deal {damage} damage!")
-        print(f"the Monster is{monster_health}")
+        print(f"the Monster's health is {monster_health}")
     elif action == "dodge":
         dodge_chance = agility * 5
-        if random.randint(1,100)<= dodge_chance:
+        if roll_dice(sides_per_die=100) <= dodge_chance:
             is_dodged = True
             print("ya dodged the attack, well played...")
         else:
@@ -91,14 +96,14 @@ while True:
             print(loot)
         print("LET'S GO GAMBLINGGG!!! picking your rewards...")
         loot_index = random.randint(0,len(loot_list) - 1)
-        loot_gold = random.randint(5,20)
+        loot_gold = roll_dice(number_of_dice=5, sides_per_die=4)
         print(f"you found one {loot_list[loot_index]} and {loot_gold} gold, u RICH now")
         player["inventory"].append(loot_list[loot_index])
         player["gold"] += loot_gold
         break
     else:
         if is_dodged == False:
-            hit = random.randint(1,6) + 2
+            hit = roll_dice(sides_per_die=6) + monster_damage
             player["current_health"] -= hit
             print(f"The {monster_name} brandishes a knife, hitting a mighty swing dealing {hit} your player health depleted to {player["current_health"]}")
 if player["current_health"] <= 0:
