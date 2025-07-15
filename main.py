@@ -5,6 +5,9 @@ def roll_dice( sides_per_die, number_of_dice=1):
     for _ in range(number_of_dice):
         sum += random.randint(1, sides_per_die)
     return sum
+def loot_roll(loot_list):
+    number_of_loot_items = roll_dice(sides_per_die=3)
+    looted_items = []
 # --- Create Character ---
 print("Welcome to Escape the Dungeon!")
 character_name = input("What is your name, BRAVE adventurer??? ")
@@ -53,8 +56,8 @@ goblin_monster = ("goblin",35,5)
 zombie_monster = ("zombie",20,6)
 DRAGON_monster= ("DRAGON",100,10)
 monster_list = [skeleton_monster,goblin_monster,zombie_monster,DRAGON_monster]
-monster_index = random.randint(0,len(monster_list) - 1)
-monster_name,monster_health,monster_damage = monster_list[monster_index]
+monster = random.choice(monster_list)
+monster_name,monster_health,monster_damage = monster
 print(f"welcome to the dungeon dungeoneer, to test your might, you will have to duel...a good ole {monster_name,monster_health,monster_damage}!")
 print(f"You have encountered a {monster_name}!")   
 print(f"⚠️ The {monster_name} attacks you!⚠️")
@@ -69,6 +72,7 @@ while True:
         damage = strength + roll_dice(sides_per_die=6)
         monster_health -= damage
         print(f"You swing your weapon and deal {damage} damage!")
+        print(f"the Monster's health is {monster_health}")
         print(f"the Monster's health is {monster_health}")
     elif action == "dodge":
         dodge_chance = agility * 5
@@ -95,10 +99,11 @@ while True:
         for loot in loot_list:
             print(loot)
         print("LET'S GO GAMBLINGGG!!! picking your rewards...")
-        loot_index = random.randint(0,len(loot_list) - 1)
+        number_of_loot_items = roll_dice
+        loot = random.choice(loot_list)
         loot_gold = roll_dice(number_of_dice=5, sides_per_die=4)
-        print(f"you found one {loot_list[loot_index]} and {loot_gold} gold, u RICH now")
-        player["inventory"].append(loot_list[loot_index])
+        print(f"you found one {loot} and {loot_gold} gold, u RICH now")
+        player["inventory"].append(loot)
         player["gold"] += loot_gold
         break
     else:
