@@ -1,13 +1,19 @@
 import random
 
 def roll_dice( sides_per_die, number_of_dice=1):
-    sum = 0
+    total = 0
     for _ in range(number_of_dice):
-        sum += random.randint(1, sides_per_die)
-    return sum
+        total += random.randint(1, sides_per_die)
+    return total
+
 def loot_roll(loot_list):
     number_of_loot_items = roll_dice(sides_per_die=3)
     looted_items = []
+    for _ in range(number_of_loot_items):
+        loot_item = random.choice(loot_list)
+        looted_items.append(loot_item)
+    return looted_items
+    
 # --- Create Character ---
 print("Welcome to Escape the Dungeon!")
 character_name = input("What is your name, BRAVE adventurer??? ")
@@ -100,10 +106,10 @@ while True:
             print(loot)
         print("LET'S GO GAMBLINGGG!!! picking your rewards...")
         number_of_loot_items = roll_dice
-        loot = random.choice(loot_list)
+        looted_items = loot_roll(loot_list)
         loot_gold = roll_dice(number_of_dice=5, sides_per_die=4)
-        print(f"you found one {loot} and {loot_gold} gold, u RICH now")
-        player["inventory"].append(loot)
+        print(f"you found {looted_items} and {loot_gold} gold from the {monster_name}, u RICH now")
+        player["inventory"].extend(looted_items)
         player["gold"] += loot_gold
         break
     else:
