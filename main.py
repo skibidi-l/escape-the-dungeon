@@ -108,11 +108,10 @@ DRAGON_monster= {
 
 monster_list = [skeleton_monster,goblin_monster,zombie_monster,DRAGON_monster]
 monster = random.choice(monster_list)
-monster_name,monster_health,monster_damage = monster
 monster_name = monster["name"]
 monster_health = monster["current_health"]
 monster_attack_power = monster["attributes"]["strength"]
-print(f"welcome to the dungeon dungeoneer, to test your might, you will have to duel...a good ole {monster_name,monster_health,monster_damage}!")
+print(f"welcome to the dungeon dungeoneer, to test your might, you will have to duel...a good ole {monster_name,monster_health,monster_attack_power}!")
 print(f"You have encountered a {monster_name}!")   
 print(f"⚠️ The {monster_name} attacks you!⚠️")
 loot_list = ["armor","sword","dagger","staff","mace","axe","armor"]
@@ -162,7 +161,7 @@ while True:
         break
     else:
         if is_dodged == False:
-            hit = roll_dice(sides_per_die=6) + monster_damage
+            hit = roll_dice(sides_per_die=6) + monster_attack_power
             player["current_health"] -= hit
             print(f"The {monster_name} brandishes a knife, hitting a mighty swing dealing {hit} your player health depleted to {player["current_health"]}")
 if player["current_health"] <= 0:
