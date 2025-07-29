@@ -14,6 +14,12 @@ def loot_roll(loot_list):
         looted_items.append(loot_item)
     return looted_items
     
+def attack(attacker, defender):
+    damage = attacker["attributes"]
+
+    damage = strength + roll_dice(sides_per_die=6)
+    monster_health -= damage
+
 # --- Create Character ---
 print("Welcome to Escape the Dungeon!")
 character_name = input("What is your name, BRAVE adventurer??? ")
@@ -56,14 +62,56 @@ player = {
     "inventory": []
 }
 
+print(player["attributes"]["strength"])
 
-skeleton_monster = ("skeleton",30,4)
-goblin_monster = ("goblin",35,5)
-zombie_monster = ("zombie",20,6)
-DRAGON_monster= ("DRAGON",100,10)
+
+skeleton_monster = {
+    "name": "skeleton",
+    "attributes":{
+        "strength": 4,
+        "agility": 2,
+        "mind": 0,
+    },
+    "max_health": 20,
+    "current_health": 20,
+}
+goblin_monster = {
+    "name": "goblin",
+    "attributes":{
+        "strength": 3,
+        "agility": 4,
+        "mind": 0,
+    },
+    "max_health": 20,
+    "current_health": 20,
+}
+zombie_monster = {
+    "name": "zombie",
+    "attributes":{
+        "strength": 5,
+        "agility": 1,
+        "mind": 0,
+    },
+    "max_health": 35,
+    "current_health": 35,
+}
+DRAGON_monster= {
+    "name": "DRAGON",
+    "attributes":{
+        "strength": 20,
+        "agility": 10,
+        "mind": 5,   
+    },
+    "max_health": 100,
+    "current_health": 100,
+}
+
 monster_list = [skeleton_monster,goblin_monster,zombie_monster,DRAGON_monster]
 monster = random.choice(monster_list)
 monster_name,monster_health,monster_damage = monster
+monster_name = monster["name"]
+monster_health = monster["current_health"]
+monster_attack_power = monster["attributes"]["strength"]
 print(f"welcome to the dungeon dungeoneer, to test your might, you will have to duel...a good ole {monster_name,monster_health,monster_damage}!")
 print(f"You have encountered a {monster_name}!")   
 print(f"⚠️ The {monster_name} attacks you!⚠️")
