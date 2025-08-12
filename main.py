@@ -15,10 +15,9 @@ def loot_roll(loot_list):
     return looted_items
     
 def attack(attacker, defender):
-    damage = attacker["attributes"]
-
-    damage = strength + roll_dice(sides_per_die=6)
-    monster_health -= damage
+    damage = attacker["attributes"]["strength"]+ roll_dice(sides_per_die=6)
+    defender["current_health"] = defender["current_health"] - damage
+    return damage
 
 # --- Create Character ---
 print("Welcome to Escape the Dungeon!")
@@ -72,6 +71,9 @@ skeleton_monster = {
         "agility": 2,
         "mind": 0,
     },
+    "equipments": {
+        "armor": "cloth armor",
+    },
     "max_health": 20,
     "current_health": 20,
 }
@@ -81,6 +83,9 @@ goblin_monster = {
         "strength": 3,
         "agility": 4,
         "mind": 0,
+    },
+    "equipments": {
+        "armor": "leather armor",
     },
     "max_health": 20,
     "current_health": 20,
@@ -92,6 +97,9 @@ zombie_monster = {
         "agility": 1,
         "mind": 0,
     },
+    "equipments": {
+        "armor": "cloth armor",
+    },
     "max_health": 35,
     "current_health": 35,
 }
@@ -102,19 +110,28 @@ DRAGON_monster= {
         "agility": 10,
         "mind": 5,   
     },
+    "equipments": {
+        "armor": "dragon scale",
+    },
     "max_health": 100,
     "current_health": 100,
 }
 
 monster_list = [skeleton_monster,goblin_monster,zombie_monster,DRAGON_monster]
 monster = random.choice(monster_list)
-monster_name = monster["name"]
-monster_health = monster["current_health"]
-monster_attack_power = monster["attributes"]["strength"]
-print(f"welcome to the dungeon dungeoneer, to test your might, you will have to duel...a good ole {monster_name,monster_health,monster_attack_power}!")
-print(f"You have encountered a {monster_name}!")   
-print(f"⚠️ The {monster_name} attacks you!⚠️")
-loot_list = ["armor","sword","dagger","staff","mace","axe","armor"]
+print(f"welcome to the dungeon dungeoneer, to test your might, you will have to duel...a good ole {monster["name"]}!")
+print(f"You have encountered a {monster["name"]}!")   
+print(f"⚠️ The {monster["name"]} attacks you!⚠️")
+armor_value = {
+    "none": 0,
+    "cloth armor": 1,
+    "leather armor": 2,
+    "chainmail armor": 3,
+    "plate armor": 4,
+    "dragon scale": 5,
+},
+
+loot_list = ["cloth armor","leather armor","chainmail armor","plate armor","dragon scale","sword","dagger","staff","mace","axe"]
 while True:
     if player["current_health"] <= 0:
         break
@@ -122,11 +139,11 @@ while True:
     is_dodged = False
     
     if action == 'attack':
-        damage = strength + roll_dice(sides_per_die=6)
-        monster_health -= damage
+        damage = attack(player,monster)
         print(f"You swing your weapon and deal {damage} damage!")
-        print(f"the Monster's health is {monster_health}")
-        print(f"the Monster's health is {monster_health}")
+
+        print(f"the Monster's health is {monster['current_health']}")
+
     elif action == "dodge":
         dodge_chance = agility * 5
         if roll_dice(sides_per_die=100) <= dodge_chance:
@@ -140,14 +157,14 @@ while True:
     elif action == "spell":
         if mind>=6:
             print("ya cast a powerful fireball")
-            monster_health =0
+            monster["current_health"] <= 0
             print("well done ")
         else:
             print("ya fail to cast the spell.")
     else:
         print("dumdass dont smash your keyboard!!!")
-    if monster_health <= 0:
-        print("congrats,your SOOOO good, well this is only thy beginning")
+    if monster["current_health"] <= 0:
+        print(f"congrats,your SOOOO good, well this is only thy beginning, you have slain a {monster["name"]}!")
         print("you may earn these items:")
         for loot in loot_list:
             print(loot)
@@ -155,15 +172,14 @@ while True:
         number_of_loot_items = roll_dice
         looted_items = loot_roll(loot_list)
         loot_gold = roll_dice(number_of_dice=5, sides_per_die=4)
-        print(f"you found {looted_items} and {loot_gold} gold from the {monster_name}, u RICH now")
+        print(f"you found {looted_items} and {loot_gold} gold from the {monster["name"]}, u RICH now")
         player["inventory"].extend(looted_items)
         player["gold"] += loot_gold
         break
     else:
         if is_dodged == False:
-            hit = roll_dice(sides_per_die=6) + monster_attack_power
-            player["current_health"] -= hit
-            print(f"The {monster_name} brandishes a knife, hitting a mighty swing dealing {hit} your player health depleted to {player["current_health"]}")
+            damage = attack(monster,player)
+            print(f"The {monster["name"]} brandishes a knife, hitting a mighty swing dealing {damage} your player health depleted to {player["current_health"]}")
 if player["current_health"] <= 0:
     print("GAME OVER!")
     print("LOL WOMP WOMP")
