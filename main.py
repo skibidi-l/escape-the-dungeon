@@ -1,4 +1,17 @@
 import random
+class Character:
+    name = ""
+    max_health = 0
+    current_health = 0
+
+npc = Character()
+npc.name = "smily"
+npc.max_health = 30
+npc.current_health = 30
+
+print(f"NPC Name: {npc.name}")
+print(f"NPC Max Health: {npc.max_health}")
+print(f"NPC Current Health: {npc.current_health}")
 
 def roll_dice( sides_per_die, number_of_dice=1):
     total = 0
@@ -16,9 +29,14 @@ def loot_roll(loot_list):
     
 def attack(attacker, defender):
     damage = attacker["attributes"]["strength"]+ roll_dice(sides_per_die=6)
+    damage = damage - get_armor_value(defender)
     defender["current_health"] = defender["current_health"] - damage
     return damage
 
+def get_armor_value(character):
+    return armor_value[character["equipments"]["armor"]]
+
+    
 # --- Create Character ---
 print("Welcome to Escape the Dungeon!")
 character_name = input("What is your name, BRAVE adventurer??? ")
@@ -55,6 +73,10 @@ player = {
         "agility": agility,
         "mind": mind,
     },
+    "equipments": {
+        "armor": "leather armor",  # Default armor
+    },
+    # Health is calculated based on strength
     "max_health": 5 * strength,
     "current_health": 5 * strength,
     "gold": 5,
@@ -129,7 +151,7 @@ armor_value = {
     "chainmail armor": 3,
     "plate armor": 4,
     "dragon scale": 5,
-},
+}
 
 loot_list = ["cloth armor","leather armor","chainmail armor","plate armor","dragon scale","sword","dagger","staff","mace","axe"]
 while True:
