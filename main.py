@@ -1,17 +1,35 @@
 import random
+
+class Attributes:
+    def __init__(self, strength, agility, mind):
+        self.strength = strength
+        self.agility = agility
+        self.mind = mind
+
 class Character:
-    name = ""
-    max_health = 0
-    current_health = 0
+    def __init__(self, name, attributes):
+        self.name = name
+        self.max_health = attributes.strength * 5
+        self.current_health = self.max_health
+        self.attributes = attributes    
+        self.equipments = None
 
-npc = Character()
-npc.name = "smily"
-npc.max_health = 30
-npc.current_health = 30
+class PlayerCharacter(Character):
+    def __init__(self, name, character_class, attributes):
+        super().__init__(name, character_class, attributes)
+        self.gold = 0
+        self.inventory = []
 
+class NonPlayerCharacter(Character):
+    def __init__(self, name, character_class, attributes):
+        super().__init__(name, character_class, attributes)
+
+npc = Character("smily",30,30, Attributes(5, 3, 2))
 print(f"NPC Name: {npc.name}")
 print(f"NPC Max Health: {npc.max_health}")
 print(f"NPC Current Health: {npc.current_health}")
+
+hero = PlayerCharacter("hero","warrior", 40, Attributes(6,4,3))
 
 def roll_dice( sides_per_die, number_of_dice=1):
     total = 0
@@ -51,16 +69,16 @@ class_choice = input("Enter 1, 2, or 3: ")
 
 if class_choice == "1":
     player_class = "Warrior"
-    strength, agility, mind = 8, 4, 2
+    attr = Attributes(8, 4, 2)
     print("yes... a gruelsome fighter who shows NO mercy to his enemies!")
 elif class_choice == "2":
     player_class = "Rogue"
-    strength, agility, mind = 4, 8, 2
+    attr = Attributes(4, 8, 2)
     print("yes...a sneaky assasin that punishes foes for stepping on his shadow!")
 elif class_choice == "3":
     player_class = "Mage"
-    strength, agility, mind = 2, 4, 8
-    print
+    attr = Attributes(8,4,2,)
+    print("yes...a mystical wizard who bends the very fabric of reality to his will!")
 else:
     print("you made a wrong move lul, idc if u made it by mistake but since you thought smashing your head on the keyboard was a option your getting the WOMP WOMP class, try not to die!!!")
     player_class = "WOMP WOMP"
@@ -69,9 +87,9 @@ player = {
     "name":character_name,
     "class": player_class,
     "attributes":{
-        "strength": strength,
-        "agility": agility,
-        "mind": mind,
+        "strength": attr.strength,
+        "agility": attr.agility,
+        "mind": attr.mind,
     },
     "equipments": {
         "armor": "leather armor",  # Default armor
@@ -82,6 +100,8 @@ player = {
     "gold": 5,
     "inventory": []
 }
+
+_player = PlayerCharacter(character_name, player_class, attr)
 
 print(player["attributes"]["strength"])
 
@@ -99,6 +119,9 @@ skeleton_monster = {
     "max_health": 20,
     "current_health": 20,
 }
+
+_skeleton_monster = NonPlayerCharacter("skeleton", Attributes(4, 2, 0))
+
 goblin_monster = {
     "name": "goblin",
     "attributes":{
