@@ -51,7 +51,7 @@ class Character:
         self.max_health = attributes.strength * 5
         self.current_health = self.max_health
         self.attributes = attributes    
-        self.equipments = None
+        self.equipments = Equipment(None,None)
     
     def equip(self, equipment):
         if isinstance(equipment, weapon):
@@ -66,13 +66,13 @@ class Character:
     
     def get_armor_value(self):
         if self.equipments != None:
-            return armor_value[self.armor.get_defense()]
+            return self.equipments.armor.get_defense()
         return 0
     
     def attack(self, target):
         damage = self.attributes.strength + roll_dice(sides_per_die=6)
         damage = damage - target.get_armor_value()
-        target.current_health -= target.current_health - damage
+        target.current_health = target.current_health - damage
         return damage
     def dodge(self):
         dodge_chance = self.attributes.agility * 5

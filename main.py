@@ -59,20 +59,28 @@ else:
     attr = game.Attributes(3,3,3)
 
 player = game.PlayerCharacter(character_name, player_class, attr)
-
-print(game.player["attributes"]["strength"])
+player.equip_armor(game.armor("leather armor","1d4"))
+player.equip_weapon(game.weapon("iron sword","1d6"))
 
 
 skeleton_monster = game.NonPlayerCharacter("skeleton","undead",game.Attributes(4, 2, 0))
+skeleton_monster.equip_armor(game.armor("leather armor","leather armor"))
+skeleton_monster.equip_weapon(game.weapon("iron sword","1d6"))
 goblin_monster = game.NonPlayerCharacter("goblin","goblin",game.Attributes(3, 4, 0))
+goblin_monster.equip_armor(game.armor("leather armor","leather armor"))
+goblin_monster.equip_weapon(game.weapon("club","1d6"))
 zombie_monster = game.NonPlayerCharacter("zombie","undead",game.Attributes(5, 1, 0))
+zombie_monster.equip_armor(game.armor("cloth armor","cloth armor"))
+zombie_monster.equip_weapon(game.weapon("claws","1d4"))
 DRAGON_monster= game.NonPlayerCharacter("DRAGON","dragon",game.Attributes(20,10,5))
+DRAGON_monster.equip_armor(game.armor("dragon scale","dragon scale"))
+DRAGON_monster.equip_weapon(game.weapon("fire breath","3d6"))
 
 monster_list = [skeleton_monster,goblin_monster,zombie_monster,DRAGON_monster]
 monster = random.choice(monster_list)
-print(f"welcome to the dungeon dungeoneer, to test your might, you will have to duel...a good ole {monster["name"]}!")
-print(f"You have encountered a {monster["name"]}!")   
-print(f"⚠️ The {monster["name"]} attacks you!⚠️")
+print(f"welcome to the dungeon dungeoneer, to test your might, you will have to duel...a good ole {monster.name}!")
+print(f"You have encountered a {monster.name}!")   
+print(f"⚠️ The {monster.name} attacks you!⚠️")
 
 
 loot_list = ["cloth armor","leather armor","chainmail armor","plate armor","dragon scale","sword","dagger","staff","mace","axe"]
@@ -80,13 +88,13 @@ while True:
     if player.current_health <= 0:
         break
     action = input("Choose action: attack / dodge / spell: ").lower()
-    is_dodged = False
+    has_dodged = False
     
     if action == 'attack':
-        damage = player.attack(player,monster)
+        damage = player.attack(monster)
         print(f"You swing your weapon and deal {damage} damage!")
 
-        print(f"the Monster's health is {monster['current_health']}")
+        print(f"the Monster's health is {monster.current_health}")
 
     elif action == "dodge":
         has_dodged = player.dodge()
@@ -97,14 +105,14 @@ while True:
     elif action == "spell":
         if attr.mind>=6:
             print("ya cast a powerful fireball")
-            monster["current_health"] <= 0
+            monster.current_health = 0
             print("well done ")
         else:
             print("ya fail to cast the spell.")
     else:
         print("dumdass dont smash your keyboard!!!")
-    if monster["current_health"] <= 0:
-        print(f"congrats,your SOOOO good, well this is only thy beginning, you have slain a {monster["name"]}!")
+    if monster.current_health <= 0:
+        print(f"congrats,your SOOOO good, well this is only thy beginning, you have slain a {monster.name}!")
         print("you may earn these items:")
         for loot in loot_list:
             print(loot)
@@ -112,17 +120,17 @@ while True:
         number_of_loot_items = game.roll_dice
         looted_items = game.loot_roll(loot_list)
         loot_gold = game.roll_dice(number_of_dice=5, sides_per_die=4)
-        print(f"you found {looted_items} and {loot_gold} gold from the {monster["name"]}, u RICH now")
-        player["inventory"].extend(looted_items)
-        player["gold"] += loot_gold
+        print(f"you found {looted_items} and {loot_gold} gold from the {monster.name}, u RICH now")
+        player.inventory.extend(looted_items)
+        player.gold += loot_gold
         break
     else:
         if not has_dodged:
             hit = monster.attack(player)
-            print(f"The {monster["name"]} brandishes a knife, hitting a mighty swing dealing {damage} your player health depleted to {player["current_health"]}")
-if player["current_health"] <= 0:
+            print(f"The {monster.name} brandishes a knife, hitting a mighty swing dealing {hit} your player health depleted to {player.current_health}")
+if player.current_health <= 0:
     print("GAME OVER!")
     print("LOL WOMP WOMP")
 else:
     print("hey man, this game is made as a draft for me coding class so tysm for playin, hope to see ya again!!!😊")
-    print(f" you now have {player["inventory"]} in your inventory and {player["gold"]} gold")
+    print(f" you now have {player.inventory} in your inventory and {player.gold} gold")
