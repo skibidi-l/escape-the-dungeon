@@ -62,6 +62,8 @@ player = game.PlayerCharacter(character_name, player_class, attr)
 player.equip_armor(game.armor("leather armor","1d4"))
 player.equip_weapon(game.weapon("iron sword","1d6"))
 
+player.show_stats()
+
 
 skeleton_monster = game.NonPlayerCharacter("skeleton","undead",game.Attributes(4, 2, 0))
 skeleton_monster.equip_armor(game.armor("leather armor","leather armor"))
@@ -77,6 +79,29 @@ DRAGON_monster.equip_armor(game.armor("dragon scale","dragon scale"))
 DRAGON_monster.equip_weapon(game.weapon("fire breath","3d6"))
 
 monster_list = [skeleton_monster,goblin_monster,zombie_monster,DRAGON_monster]
+
+rooms = {
+        'cell': {
+        'description': 'A cold, dark cell. The door is locked.',
+        'east': "Hallway",
+        'item': "key",
+        },
+    "Hallway": {
+        'description': "A dim hallway that leads to a heavy iron gate that acts as a roadblock to the northword path.",
+        'west': 'cell',
+        'north': 'Armory',
+    },
+    "Armory": {
+        'description': "A room filled with rusty weapons were a glowing staff beckons you to grab it.",
+        'south': 'Hallway',
+        'item': "magic staff",
+        'east': "Exit",
+    },
+    "Exit": {
+        'description': "A ancient door that is riddled with arcane symbols, it seems to be locked with a magical seal.",
+        'west': "Armory",
+    }
+}
 monster = random.choice(monster_list)
 print(f"welcome to the dungeon dungeoneer, to test your might, you will have to duel...a good ole {monster.name}!")
 print(f"You have encountered a {monster.name}!")   
