@@ -89,12 +89,14 @@ rooms = {
     "Hallway": {
         'description': "A dim hallway that leads to a heavy iron gate that acts as a roadblock to the northword path.",
         'west': 'cell',
+        'encounter' : True,
         'north': 'Armory',
     },
     "Armory": {
         'description': "A room filled with rusty weapons were a glowing staff beckons you to grab it.",
         'south': 'Hallway',
         'item': "magic staff",
+        'encounter' : True,
         'east': "Exit",
     },
     "Exit": {
@@ -109,18 +111,46 @@ print("type 'exit' to exit the game at any time.")
 while True:
     print(f"\nYou are in the {current_room}.")
     print(rooms[current_room]['description'])
+
+    if 'encounter' in rooms[current_room]:
+        monster = random.choice(monster_list)
+        game.encounter(player, monster)
+        rooms[current_room]['encounter'] = False
+        if player.current_health <= 0:
+            print("GAME OVER!")
+            print("LOL WOMP WOMP")
+            break
     
     if 'item' in rooms[current_room]:
         print(f"You see a {rooms[current_room]['item']} here.")
     
     action = input("Where do you wish to go?(go [direction] / take [item] / stats / exit): ").strip().lower()
     
-    if action == 'exit':
+    if action == 'Exit':
         print("Exiting the game. Goodbye!")
         break
     elif action == 'stats':
         player.show_stats()
         continue
+    elif action.startswith('go '):
+        direction = action.split()[1].lower()
+        if direction in rooms[current_room]:
+            current_room = rooms[current_room][direction]
+            if current_room == "Exit":
+                break
+        else:
+            print("Invalid direction, try again.")
+    elif action.startswith('take '):
+        item = action.split()[1].lower()
+        if 'item' in rooms[current_room] and item == rooms[current_room]['item']:
+            player.inventory.append(rooms[current_room].pop('item'))
+            print(f"You picked up the {item}.")
+        else:
+             print("No such item is here.")
+
+
+
+
 
 # monster = random.choice(monster_list)
 # game.encounter(player, monster)
