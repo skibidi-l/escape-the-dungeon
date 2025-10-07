@@ -59,31 +59,31 @@ else:
     attr = game.Attributes(3,3,3)
 
 player = game.PlayerCharacter(character_name, player_class, attr)
-player.equip_armor(game.armor("leather armor","1d4"))
-player.equip_weapon(game.weapon("iron sword","1d6"))
+player.equip_armor(game.Armor("leather armor","1d4"))
+player.equip_weapon(game.Weapon("iron sword","1d6"))
 
 player.show_stats()
 
 
 skeleton_monster = game.NonPlayerCharacter("skeleton","undead",game.Attributes(4, 2, 0))
-skeleton_monster.equip_armor(game.armor("leather armor","leather armor"))
-skeleton_monster.equip_weapon(game.weapon("iron sword","1d6"))
+skeleton_monster.equip_armor(game.Armor("leather armor","leather armor"))
+skeleton_monster.equip_weapon(game.Weapon("iron sword","1d6"))
 goblin_monster = game.NonPlayerCharacter("goblin","goblin",game.Attributes(3, 4, 0))
-goblin_monster.equip_armor(game.armor("leather armor","leather armor"))
-goblin_monster.equip_weapon(game.weapon("club","1d6"))
+goblin_monster.equip_armor(game.Armor("leather armor","leather armor"))
+goblin_monster.equip_weapon(game.Weapon("club","1d6"))
 zombie_monster = game.NonPlayerCharacter("zombie","undead",game.Attributes(5, 1, 0))
-zombie_monster.equip_armor(game.armor("cloth armor","cloth armor"))
-zombie_monster.equip_weapon(game.weapon("claws","1d4"))
+zombie_monster.equip_armor(game.Armor("cloth armor","cloth armor"))
+zombie_monster.equip_weapon(game.Weapon("claws","1d4"))
 DRAGON_monster= game.NonPlayerCharacter("DRAGON","dragon",game.Attributes(20,10,5))
-DRAGON_monster.equip_armor(game.armor("dragon scale","dragon scale"))
-DRAGON_monster.equip_weapon(game.weapon("fire breath","3d6"))
+DRAGON_monster.equip_armor(game.Armor("dragon scale","dragon scale"))
+DRAGON_monster.equip_weapon(game.Weapon("fire breath","3d6"))
 
 monster_list = [skeleton_monster,goblin_monster,zombie_monster,DRAGON_monster]
 
 rooms = {
         'cell': {
         'description': 'A cold, dark cell. The door is locked.',
-        'east': "Hallway",
+        'east': "Hallway (locked)",
         'item': "key",
         },
     "Hallway": {
@@ -112,7 +112,7 @@ while True:
     print(f"\nYou are in the {current_room}.")
     print(rooms[current_room]['description'])
 
-    if 'encounter' in rooms[current_room]:
+    if 'encounter' in rooms[current_room] and rooms[current_room]['encounter'] == True:
         monster = random.choice(monster_list)
         game.encounter(player, monster)
         rooms[current_room]['encounter'] = False
@@ -124,7 +124,7 @@ while True:
     if 'item' in rooms[current_room]:
         print(f"You see a {rooms[current_room]['item']} here.")
     
-    action = input("Where do you wish to go?(go [direction] / take [item] / stats / exit): ").strip().lower()
+    action = input("Where do you wish to go?(go [direction] / take [item] /use [item] / stats / exit): ").strip().lower()
     
     if action == 'Exit':
         print("Exiting the game. Goodbye!")
@@ -135,9 +135,14 @@ while True:
     elif action.startswith('go '):
         direction = action.split()[1].lower()
         if direction in rooms[current_room]:
-            current_room = rooms[current_room][direction]
-            if current_room == "Exit":
-                break
+            if rooms[current_room][direction].lower().endswith("(locked)"):
+                print("The door is locked. You need a key to proceed.")
+            else:
+                current_room = rooms[current_room][direction]
+                if current_room == "Exit":
+                    print("Congratulations! You've escaped the dungeon!")
+                    break
+           
         else:
             print("Invalid direction, try again.")
     elif action.startswith('take '):
@@ -147,6 +152,18 @@ while True:
             print(f"You picked up the {item}.")
         else:
              print("No such item is here.")
+    elif action.startswith('use '):
+        item = action.split()[1].lower()
+        if item in player.inventory:
+            if item == 'key' and current_room == 'cell':
+                print("You used the key to unlock the gate to a dilapidated hallway.")
+                rooms['cell']['east'] = 'Hallway'
+                rooms['cell']['description'] = rooms['cell']['description'].replace("The door is locked.","The door is now unlocked.")
+                player.inventory.remove('key')
+            else:
+                print(f"You can't use the {item} here.")
+        else:
+            print(f"you don't have the {item} in your inventory.")
 
 
 

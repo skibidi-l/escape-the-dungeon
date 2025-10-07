@@ -9,27 +9,29 @@ armor_value = {
     "dragon scale": 5,
 }
 
-class weapon:
-     def __init__(self, name, damage):  
+class Questitem:
+    def __init__(self, name):
+        self.name = name
+class consumable:
+    def __init__(self, name, effect):
+        self.name = name
+        self.effect = effect
+
+class Weapon:
+     def __init__(self, name, damage_dice):  
             self.name = name
-            self.damage = damage
+            self.damage = damage_dice
      def   get_damage(self):   
         result = self.damage_dice.split('d')
         num_dice = int(result[0])
         sides = int(result[1])
         return roll_dice(sides_per_die=sides, number_of_dice=num_dice)
 
-class armor:
-    def __init__(self, name, damage_dice):
+class Armor:
+    def __init__(self, name, type):
         self.name = name
-        self.damage_dice = damage_dice
-
-    def get_damage(self):
-        result = self.damage_dice.split('d')
-        num_dice = int(result[0])
-        sides = int
+        self.type = type
         
-
     def get_defense(self):
         return armor_value[self.name]
     
@@ -55,7 +57,7 @@ class Character:
         self.is_in_combat = False
     
     def equip(self, equipment):
-        if isinstance(equipment, weapon):
+        if isinstance(equipment, Weapon):
             self.equipments = equipment
 
     def equip_armor(self, armor):
@@ -112,6 +114,12 @@ class PlayerCharacter(Character):
         self.gold = 0
         self.inventory = []
 
+    def is_in_inventory(self, item_name):
+        for item in self.inventory:
+            if item.name == item_name:
+                return True
+        return False
+
 class NonPlayerCharacter(Character):
     def __init__(self, name, character_class, attributes):
         super().__init__(name, character_class, attributes)
@@ -138,7 +146,7 @@ def encounter(player, monster):
     print(f"You have encountered a {monster.name}!")   
     print(f"⚠️ The {monster.name} attacks you!⚠️")
 
-    loot_list = ["cloth armor","leather armor","chainmail armor","plate armor","dragon scale","sword","dagger","staff","mace","axe"]
+    loot_list = [Armor("cloth armor", "cloth armor"),Armor("leather armor", "leather armor"),Armor("chainmail armor", "chainmail armor"),Armor("plate armor", "plate armor"),Armor("dragon scale", "dragon scale"),Weapon("sword", "1d6"),Weapon("dagger", "1d4"),Weapon("staff", "1d4"),Weapon("mace", "1d6"),Weapon("axe", "1d6")]
     while True:
         if player.current_health <= 0:
             break
