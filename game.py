@@ -8,18 +8,28 @@ armor_value = {
     "plate armor": 4,
     "dragon scale": 5,
 }
-
-class Questitem:
+class item:
     def __init__(self, name):
         self.name = name
-class consumable:
+
+    def __str__(self):
+        return self.name
+
+    def __repr__(self):
+        return self.name
+    
+class Questitem(item):
+    def __init__(self, name):
+        super().__init__(name)
+
+class consumable(item):
     def __init__(self, name, effect):
-        self.name = name
+        super().__init__(name)
         self.effect = effect
 
-class Weapon:
+class Weapon(item):
      def __init__(self, name, damage_dice):  
-            self.name = name
+            super().__init__(name)
             self.damage = damage_dice
      def   get_damage(self):   
         result = self.damage_dice.split('d')
@@ -27,9 +37,9 @@ class Weapon:
         sides = int(result[1])
         return roll_dice(sides_per_die=sides, number_of_dice=num_dice)
 
-class Armor:
+class Armor(item):
     def __init__(self, name, type):
-        self.name = name
+        super().__init__(name)
         self.type = type
         
     def get_defense(self):
@@ -146,6 +156,16 @@ def encounter(player, monster):
     print(f"You have encountered a {monster.name}!")   
     print(f"⚠️ The {monster.name} attacks you!⚠️")
 
+    loot_list = [
+        Armor("cloth armor", "cloth armor"),
+        Weapon("sword", "1d6"),
+        Weapon("dagger", "1d4"),
+        Weapon("staff", "1d4"),
+        Weapon("mace", "1d6"),
+        Weapon("axe", "1d6")
+    ]
+
+    print(loot_list)
     loot_list = [Armor("cloth armor", "cloth armor"),Armor("leather armor", "leather armor"),Armor("chainmail armor", "chainmail armor"),Armor("plate armor", "plate armor"),Armor("dragon scale", "dragon scale"),Weapon("sword", "1d6"),Weapon("dagger", "1d4"),Weapon("staff", "1d4"),Weapon("mace", "1d6"),Weapon("axe", "1d6")]
     while True:
         if player.current_health <= 0:

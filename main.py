@@ -148,18 +148,18 @@ while True:
     elif action.startswith('take '):
         item = action.split()[1].lower()
         if 'item' in rooms[current_room] and item == rooms[current_room]['item']:
-            player.inventory.append(rooms[current_room].pop('item'))
+            player.inventory.append(game.Questitem(rooms[current_room].pop('item')))
             print(f"You picked up the {item}.")
         else:
              print("No such item is here.")
     elif action.startswith('use '):
         item = action.split()[1].lower()
-        if item in player.inventory:
+        if player.is_in_inventory(item):
             if item == 'key' and current_room == 'cell':
                 print("You used the key to unlock the gate to a dilapidated hallway.")
                 rooms['cell']['east'] = 'Hallway'
                 rooms['cell']['description'] = rooms['cell']['description'].replace("The door is locked.","The door is now unlocked.")
-                player.inventory.remove('key')
+                #player.inventory.remove('key')
             else:
                 print(f"You can't use the {item} here.")
         else:
