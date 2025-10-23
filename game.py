@@ -66,10 +66,7 @@ class Character:
         self.equipments = Equipment(None,None)
         self.is_in_combat = False
     
-    def equip(self, equipment):
-        if isinstance(equipment, Weapon):
-            self.equipments = equipment
-
+    
     def equip_armor(self, armor):
         self.equipments.armor = armor
 
@@ -124,11 +121,48 @@ class PlayerCharacter(Character):
         self.gold = 0
         self.inventory = []
 
+    def unequip(self, item):
+        if isinstance(item, Weapon):
+            self.equipments.weapon = None
+            self.inventory.append(item)
+            print(f"You have unequipped the weapon: {item.name}")
+        elif isinstance(item, Armor):
+            self.equipments.armor = None
+            self.inventory.append(item)
+            print(f"You have unequipped the armor: {item.name}")
+        else:
+            print(f"You cannot unequip the item: {item.name}")
+
+    def equip(self, item_name):
+        for index, item in enumerate(self.inventory):
+            if item.name.lower() == item_name:
+                if isinstance(item, Weapon):
+                    self.unequip(self.equipments.weapon)
+                    del self.inventory[index]
+                    self.equip_weapon(item)
+                    print(f"you have equiped the weapon: {item.name}")
+                elif isinstance(item, Armor):
+                    self.unequip(self.equipments.armor)
+                    del self.inventory[index]
+                    print(f"you have equiped the armor: {item.name}")
+                else:
+                    print(f"you cannot equip the item: {item.name}, it is neither a weapon nor armor")
+
+                break
+
     def is_in_inventory(self, item_name):
         for item in self.inventory:
-            if item.name == item_name:
+            if item.name.lower() == item_name:
                 return True
         return False
+
+    def use_item(self, item_name):
+        for index, item in enumerate (self.inventory):
+            if item.name.lower() == item_name:
+                del self.inventory[index]
+                break
+
+
 
 class NonPlayerCharacter(Character):
     def __init__(self, name, character_class, attributes):

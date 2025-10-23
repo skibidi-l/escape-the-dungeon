@@ -124,7 +124,8 @@ while True:
     if 'item' in rooms[current_room]:
         print(f"You see a {rooms[current_room]['item']} here.")
     
-    action = input("Where do you wish to go?(go [direction] / take [item] /use [item] / stats / exit): ").strip().lower()
+    print("")
+    action = input("Where do you wish to go?(go [direction] / take [item] /use [item] / stats / exit / inventory / equip [weapon/armor]): ").strip().lower()
     
     if action == 'Exit':
         print("Exiting the game. Goodbye!")
@@ -146,7 +147,7 @@ while True:
         else:
             print("Invalid direction, try again.")
     elif action.startswith('take '):
-        item = action.split()[1].lower()
+        item = action.removeprefix('take ').lower()
         if 'item' in rooms[current_room] and item == rooms[current_room]['item']:
             player.inventory.append(game.Questitem(rooms[current_room].pop('item')))
             print(f"You picked up the {item}.")
@@ -156,6 +157,7 @@ while True:
         item = action.split()[1].lower()
         if player.is_in_inventory(item):
             if item == 'key' and current_room == 'cell':
+                player.use_item('key')
                 print("You used the key to unlock the gate to a dilapidated hallway.")
                 rooms['cell']['east'] = 'Hallway'
                 rooms['cell']['description'] = rooms['cell']['description'].replace("The door is locked.","The door is now unlocked.")
@@ -164,10 +166,18 @@ while True:
                 print(f"You can't use the {item} here.")
         else:
             print(f"you don't have the {item} in your inventory.")
+    elif action == 'inventory':
+        if player.inventory:
+            print("Your inventory contains:")
+            for item in player.inventory:
+                print(f"- {item.name}")
+        else:
+            print("Your inventory is empty.")
 
-
-
-
+    elif action.startswith('equip '):
+        equip_item = action.removeprefix('equip ').lower()
+        if player.is_in_inventory(equip_item):
+            player.equip(equip_item)
 
 # monster = random.choice(monster_list)
 # game.encounter(player, monster)
