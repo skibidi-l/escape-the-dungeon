@@ -23,10 +23,19 @@ class Questitem(item):
         super().__init__(name)
 
 class consumable(item):
-    def __init__(self, name, effect):
+    def __init__(self, name, effect, amount):
         super().__init__(name)
         self.effect = effect
+        self.amount = amount
 
+    def use(self, character):
+        if self.effect == "heal":
+            character.current_health += self.amount
+            if character.current_health > character.max_health:
+                character.current_health = character.max_health
+            print(f"{character.name} used {self.amount} and healed 10 health points.")
+        else:
+            print(f"{self.name} has no effect.")
 class Weapon(item):
      def __init__(self, name, damage_dice):  
             super().__init__(name)
@@ -158,7 +167,10 @@ class PlayerCharacter(Character):
 
     def use_item(self, item_name):
         for index, item in enumerate (self.inventory):
-            if item.name.lower() == item_name:
+            if item.name.lower() == item_name.lower():
+                if isinstance(item, consumable):
+                    print(f"Using item: {item.name}")
+                    item.use(self)
                 del self.inventory[index]
                 break
 
