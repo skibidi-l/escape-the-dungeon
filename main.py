@@ -149,7 +149,7 @@ while True:
     elif action.startswith('take '):
         item = action.removeprefix('take ').lower()
         if 'item' in rooms[current_room] and item == rooms[current_room]['item']:
-            player.inventory.append(game.Questitem(rooms[current_room].pop('item')))
+            player.inventory.append(game.QuestItem(rooms[current_room].pop('item')))
             print(f"You picked up the {item}.")
         else:
              print("No such item is here.")

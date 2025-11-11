@@ -1,5 +1,5 @@
 import unittest
-from game import Character, consumable, PlayerCharacter, Attributes
+from game import Armor, Character, Consumable, PlayerCharacter, Attributes, Weapon
 
 class TestPlayerCharacter(unittest.TestCase):
     def test_create_new_player_character(self):
@@ -15,19 +15,37 @@ class TestPlayerCharacter(unittest.TestCase):
         attr = Attributes(3, 5, 7)
         player = PlayerCharacter("herro there", "Mage", attr)
         print(f"max health: {player.max_health}")
+
+
         player.current_health = 1
-        health_potion = consumable("Health Potion", "heal", 10)
+        health_potion = Consumable("Health Potion", "heal", 10)
         player.inventory.append(health_potion)
         player.use_item("Health Potion")
         self.assertEqual(player.current_health, 11)
         
         player.current_health = player.max_health - 5
-        potion2 = consumable("Health Potion", "heal", 10)
+        potion2 = Consumable("Health Potion", "heal", 10)
         player.inventory.append(potion2)
         player.use_item("Health Potion")
         self.assertEqual(player.current_health, player.max_health)
           # 10 + 10 from potion
 
+
+    def test_player_equip_weapon(self):
+        attr = Attributes(4, 4, 4)
+        player = PlayerCharacter("herro there", "Mage", attr)
+        weapon = Weapon("Sword", "1d8")
+        player.equip_weapon(weapon)
+        print(f"Equipped weapon: {player.equipments.weapon}")
+        self.assertEqual(player.equipments.weapon.name, "Sword")
+
+    def test_player_equip_armor(self):
+        attr = Attributes(4, 4, 4)
+        player = PlayerCharacter("herro there", "Mage", attr)
+        armor = Armor("Chainmail", "chainmail")
+        player.equip_armor(armor)
+        print(f"Equipped armor: {player.equipments.armor}")
+        self.assertEqual(player.equipments.armor.name, "Chainmail")
 
 if __name__ == '__main__':
     unittest.main()

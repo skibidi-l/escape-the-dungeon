@@ -8,7 +8,7 @@ armor_value = {
     "plate armor": 4,
     "dragon scale": 5,
 }
-class item:
+class Item:
     def __init__(self, name):
         self.name = name
 
@@ -18,11 +18,11 @@ class item:
     def __repr__(self):
         return self.name
     
-class Questitem(item):
+class QuestItem(Item):
     def __init__(self, name):
         super().__init__(name)
 
-class consumable(item):
+class Consumable(Item):
     def __init__(self, name, effect, amount):
         super().__init__(name)
         self.effect = effect
@@ -36,17 +36,17 @@ class consumable(item):
             print(f"{character.name} used {self.amount} and healed 10 health points.")
         else:
             print(f"{self.name} has no effect.")
-class Weapon(item):
-     def __init__(self, name, damage_dice):  
-            super().__init__(name)
-            self.damage = damage_dice
-     def   get_damage(self):   
+class Weapon(Item):
+    def __init__(self, name, damage_dice):  
+        super().__init__(name)
+        self.damage = damage_dice
+    def get_damage(self):   
         result = self.damage_dice.split('d')
         num_dice = int(result[0])
         sides = int(result[1])
         return roll_dice(sides_per_die=sides, number_of_dice=num_dice)
 
-class Armor(item):
+class Armor(Item):
     def __init__(self, name, type):
         super().__init__(name)
         self.type = type
@@ -168,7 +168,7 @@ class PlayerCharacter(Character):
     def use_item(self, item_name):
         for index, item in enumerate (self.inventory):
             if item.name.lower() == item_name.lower():
-                if isinstance(item, consumable):
+                if isinstance(item, Consumable):
                     print(f"Using item: {item.name}")
                     item.use(self)
                 del self.inventory[index]
