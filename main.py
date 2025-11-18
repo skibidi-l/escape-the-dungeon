@@ -48,7 +48,7 @@ if class_choice == "1":
 elif class_choice == "2":
     player_class = "Rogue"
     attr = game.Attributes(4, 8, 2)
-    print("yes...a sneaky assasin that punishes foes for stepping on his shadow!")
+    print("yes...a sneaky assasin that punishes foes for DARING to step on his shadow!")
 elif class_choice == "3":
     player_class = "Mage"
     attr = game.Attributes(8,4,2)

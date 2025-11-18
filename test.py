@@ -47,5 +47,24 @@ class TestPlayerCharacter(unittest.TestCase):
         print(f"Equipped armor: {player.equipments.armor}")
         self.assertEqual(player.equipments.armor.name, "Chainmail")
 
+    def test_player_unequip_weapon(self):
+        attr = Attributes(4, 4, 4)
+        player = PlayerCharacter("herro there", "Mage", attr)
+        weapon = Weapon("long bow", "1d8")
+        player.equip(weapon)
+        print(f"Equipped weapon before unequip: {player.equipments.weapon}")
+        player.unequip_weapon()
+        print(f"Equipped weapon after unequip: {player.equipments.weapon}")
+        self.assertIsNone(player.equipments.weapon)
+
+    def test_player_unequip_weapon_error_case(self):
+        attr = Attributes(4, 4, 4)
+        player = PlayerCharacter("herro there", "Mage", attr)
+        print(f"Players inventor befor unequip attempt: {player.inventory}")
+        weapon = Weapon("dagger", "1d4")
+        player.unequip_weapon()
+        print(f"Players inventory after unequip attempt: {player.inventory}")
+        self.assertListEqual(player.inventory, [])
+
 if __name__ == '__main__':
     unittest.main()

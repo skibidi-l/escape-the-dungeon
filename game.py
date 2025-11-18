@@ -129,29 +129,20 @@ class PlayerCharacter(Character):
         super().__init__(name, character_class, attributes)
         self.gold = 0
         self.inventory = []
+        self.spells = (None, None, None)
 
-    def unequip(self, item):
-        if isinstance(item, Weapon):
-            self.equipments.weapon = None
-            self.inventory.append(item)
-            print(f"You have unequipped the weapon: {item.name}")
-        elif isinstance(item, Armor):
-            self.equipments.armor = None
-            self.inventory.append(item)
-            print(f"You have unequipped the armor: {item.name}")
-        else:
-            print(f"You cannot unequip the item: {item.name}")
+
 
     def equip(self, item_name):
         for index, item in enumerate(self.inventory):
             if item.name.lower() == item_name:
                 if isinstance(item, Weapon):
-                    self.unequip(self.equipments.weapon)
+                    self.unequip_weapon()
                     del self.inventory[index]
                     self.equip_weapon(item)
                     print(f"you have equiped the weapon: {item.name}")
                 elif isinstance(item, Armor):
-                    self.unequip(self.equipments.armor)
+                    self.unequip_armor()
                     del self.inventory[index]
                     print(f"you have equiped the armor: {item.name}")
                 else:
@@ -159,6 +150,21 @@ class PlayerCharacter(Character):
 
                 break
 
+    def learn_spell(self, spell):
+        for i in range(len(self.spells)):
+            if self.spells[i] is None:
+                self_list = list(self.spells)
+                self.spells[i] = spell
+                print(f"you have learned the spell: {spell.name}")
+                return
+        print("you cannot learn more spells, your spell slots are full.")
+
+    def cast_spell(self, spell_name, enemy):
+        for spell in self.spells:
+            if spell_name == spell.name:
+                spell.cast(enemy)
+
+                break
     def is_in_inventory(self, item_name):
         for item in self.inventory:
             if item.name.lower() == item_name:
@@ -173,7 +179,23 @@ class PlayerCharacter(Character):
                     item.use(self)
                 del self.inventory[index]
                 break
+    def unequip_weapon(self):
+        if self.equipments.weapon != None:
+            weapon = self.equipments.weapon
+            self.equipments.weapon = None
+            self.inventory.append(weapon)
+            print(f"You have unequipped the weapon: {weapon.name}")
+        else:
+            print("No weapon is currently equipped.")
 
+    def unequip_armor(self):
+        if self.equipments.armor is not None:
+            armor = self.equipments.armor
+            self.equipments.armor = None
+            self.inventory.append(armor)
+            print(f"You have unequipped the armor: {armor.name}")
+        else:
+            print("No armor is currently equipped.")
 
 
 class NonPlayerCharacter(Character):
