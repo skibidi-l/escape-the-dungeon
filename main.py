@@ -125,7 +125,8 @@ while True:
         print(f"You see a {rooms[current_room]['item']} here.")
     
     print("")
-    action = input("Where do you wish to go?(go [direction] / take [item] /use [item] / stats / exit / inventory / equip [weapon/armor]): ").strip().lower()
+    print("actions available : go [direction] / take [item] / use [item] / stats / exit / inventory / equip [weapon/armor]")
+    action = input("What would you like to do? ").strip().lower()
     
     if action == 'Exit':
         print("Exiting the game. Goodbye!")
