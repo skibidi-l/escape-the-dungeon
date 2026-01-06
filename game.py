@@ -153,8 +153,9 @@ class PlayerCharacter(Character):
     def learn_spell(self, spell):
         for i in range(len(self.spells)):
             if self.spells[i] is None:
-                self_list = list(self.spells)
-                self.spells[i] = spell
+                spell_list = list(self.spells)
+                spell_list[i] = spell
+                self.spells = tuple(spell_list)
                 print(f"you have learned the spell: {spell.name}")
                 return
         print("you cannot learn more spells, your spell slots are full.")
@@ -201,6 +202,18 @@ class PlayerCharacter(Character):
 class NonPlayerCharacter(Character):
     def __init__(self, name, character_class, attributes):
         super().__init__(name, character_class, attributes)
+
+class Spell:
+    def __init__(self, name, damage_dice, mana_cost):
+        self.name = name
+        self.damage_dice = damage_dice
+        self.mana_cost = mana_cost
+
+    def cast(self, enemy):
+      sides_per_die = int(self.damage_dice.split('d')[1])
+      number_of_dice = int(self.damage_dice.split('d')[0])
+      damage = roll_dice(sides_per_die, number_of_dice)
+      print(f"You cast {self.name}, dealing {damage} damage to the {enemy.name}!")
 
 def roll_dice( sides_per_die, number_of_dice=1):
     total = 0
@@ -254,10 +267,9 @@ def encounter(player, monster):
             else:
                 print("ya tried to dodge but had a skill issue,lul")
         elif action == "spell":
-            if player.attributes.mind>=6:
-                print("ya cast a powerful fireball")
-                monster.current_health = 0
-                print("well done ")
+            if player.spells[0] is not None or player.spells[1] is not None or player.spells[2] is not None:
+                spell_name = input("Enter the spell name to cast: ").strip()
+                player.cast_spell(spell_name, monster)
             else:
                 print("ya fail to cast the spell.")
         else:

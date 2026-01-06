@@ -1,5 +1,5 @@
 import unittest
-from game import Armor, Character, Consumable, PlayerCharacter, Attributes, Weapon
+from game import Armor, Character, Consumable, PlayerCharacter, Attributes, Weapon, NonPlayerCharacter, Spell
 
 class TestPlayerCharacter(unittest.TestCase):
     def test_create_new_player_character(self):
@@ -56,15 +56,32 @@ class TestPlayerCharacter(unittest.TestCase):
         player.unequip_weapon()
         print(f"Equipped weapon after unequip: {player.equipments.weapon}")
         self.assertIsNone(player.equipments.weapon)
-
-    def test_player_unequip_weapon_error_case(self):
-        attr = Attributes(4, 4, 4)
+    def test_mage_encounter(self):
+        attr = Attributes(3, 4, 8)
         player = PlayerCharacter("herro there", "Mage", attr)
-        print(f"Players inventor befor unequip attempt: {player.inventory}")
-        weapon = Weapon("dagger", "1d4")
-        player.unequip_weapon()
-        print(f"Players inventory after unequip attempt: {player.inventory}")
-        self.assertListEqual(player.inventory, [])
+        player.equip_armor(Armor("cloth armor","cloth"))
+        player.equip_weapon(Weapon("wooden staff","1d6"))
+        fireball_spell = Spell("Fireball", "1d6", 120)
+
+        player.learn_spell(fireball_spell)
+        print(f"Player Spells: {[spell.name for spell in player.spells if spell is not None]}")
+
+        goblin_monster = NonPlayerCharacter("Goblin","Beast", Attributes(3, 4, 8))
+        goblin_monster.equip_armor(Armor("leather armor","leather"))
+        goblin_monster.equip_weapon(Weapon("club","1d6"))
+
+        while goblin_monster.current_health > 0 and player.current_health > 0:
+            player.cast_spell("Fireball", goblin_monster)
+            if goblin_monster.current_health <= 0:
+                break
+
+            hit = goblin_monster.attack(player)
+            print(f"{goblin_monster.name} and hits for {hit} damage.")
+
+        if goblin_monster.current_health <= 0:
+            print("goblin defeated!")
+        else:
+            print("player defeated!")
 
 if __name__ == '__main__':
     unittest.main()
