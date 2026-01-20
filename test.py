@@ -1,6 +1,5 @@
 import unittest
-from game import Armor, Character, Consumable, PlayerCharacter, Attributes, Weapon, NonPlayerCharacter, Spell
-
+from game import Armor, Character, Consumable, PlayerCharacter, Attributes, Weapon, NonPlayerCharacter, Spell, Skill
 class TestPlayerCharacter(unittest.TestCase):
     def test_create_new_player_character(self):
         attr = Attributes(5, 5, 5)
@@ -82,6 +81,27 @@ class TestPlayerCharacter(unittest.TestCase):
             print("goblin defeated!")
         else:
             print("player defeated!")
+
+    def test_skill_use(self):
+        attr = Attributes(4, 8, 2)
+        player = PlayerCharacter("herro there", "Rogue", attr)
+
+        backstab_skill = Skill("Backstab", "3d6", 200)
+        player.learn_skill(backstab_skill)
+        self.assertEqual(player.skills[0].name, "Backstab")
+
+        goblin_monster = NonPlayerCharacter("Goblin","Beast", Attributes(3, 4, 8))
+        goblin_monster.equip_armor(Armor("leather armor","leather"))
+        goblin_monster.equip_weapon(Weapon("club","1d6"))
+
+        while goblin_monster.current_health > 0 and player.current_health > 0:
+            player.use_skill("Backstab", goblin_monster)
+            if goblin_monster.current_health <= 0:
+                break
+
+            hit = goblin_monster.attack(player)
+            print(f"{goblin_monster.name} and hits for {hit} damage.")
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -4,7 +4,7 @@ armor_value = {
     "none": 0,
     "cloth armor": 1,
     "leather armor": 2,
-    "chainmail armor": 3,
+    "chainmail": 3,
     "plate armor": 4,
     "dragon scale": 5,
 }
@@ -84,7 +84,7 @@ class Character:
 
     
     def get_armor_value(self):
-        if self.equipments != None:
+        if self.equipments != None and self.equipments.armor != None:
             return self.equipments.armor.get_defense()
         return 0
     
@@ -110,14 +110,16 @@ class Character:
             print(f"Strength: {self.attributes.strength}")
             print(f"Agility: {self.attributes.agility}")
             print(f"Mind: {self.attributes.mind}")
-        if self.equipments.weapon != None:
-            print(f"Weapon: {self.equipments.weapon.name} (Damage: {self.equipments.weapon.damage})")
-        else:
-            print("Weapon: None")
-        if self.equipments.armor != None:
-            print(f"Armor: {self.equipments.armor.name} (Defense: {self.get_armor_value()})")
-        else:
-            print("Armor: None")
+            if self.equipments.weapon != None:
+                print(f"Weapon: {self.equipments.weapon.name} (Damage: {self.equipments.weapon.damage})")
+            else:
+                print("Weapon: None")
+
+            if self.equipments.armor != None:
+                print(f"Armor: {self.equipments.armor.name} (Defense: {self.get_armor_value()})")
+            else:
+                print("Armor: None")
+
 
     def start_combat(self):
         self.is_in_combat = True
@@ -130,6 +132,7 @@ class PlayerCharacter(Character):
         self.gold = 0
         self.inventory = []
         self.spells = (None, None, None)
+        self.skills = (None, None, None)
 
 
 
@@ -164,8 +167,24 @@ class PlayerCharacter(Character):
         for spell in self.spells:
             if spell_name == spell.name:
                 spell.cast(enemy)
-
                 break
+
+    def learn_skill(self, skill):
+        for i in range(len(self.skills)):
+            if self.skills[i] is None:
+                skill_list = list(self.skills)
+                skill_list[i] = skill
+                self.skills = tuple(skill_list)
+                print(f"you have learned the skill: {skill.name}")
+                return
+        print("you cannot learn more skills, your skill slots are full.")
+
+    def use_skill(self, skill_name, enemy):
+        for skill in self.skills:
+            if skill is not None and skill_name == skill.name:
+                skill.use(enemy)
+                break
+
     def is_in_inventory(self, item_name):
         for item in self.inventory:
             if item.name.lower() == item_name:
@@ -214,7 +233,19 @@ class Spell:
       number_of_dice = int(self.damage_dice.split('d')[0])
       damage = roll_dice(sides_per_die, number_of_dice)
       print(f"You cast {self.name}, dealing {damage} damage to the {enemy.name}!")
+class Skill:
+    def __init__(self, name, damage_dice, stamina_cost):
+        self.name = name
+        self.damage_dice = damage_dice
+        self.stamina_cost = stamina_cost
 
+    def use(self, enemy):
+        sides_per_die = int(self.damage_dice.split('d')[1])
+        number_of_dice = int(self.damage_dice.split('d')[0])
+        damage = roll_dice(sides_per_die, number_of_dice)
+        enemy.current_health -= damage
+
+        print(f"You use {self.name}, dealing {damage} damage to the {enemy.name}!")
 def roll_dice( sides_per_die, number_of_dice=1):
     total = 0
     for _ in range(number_of_dice):
@@ -251,7 +282,7 @@ def encounter(player, monster):
     while True:
         if player.current_health <= 0:
             break
-        action = input("Choose action: attack / dodge / spell: ").lower()
+        action = input("Choose action: attack / dodge / spell / skill: ").lower()
         has_dodged = False
         
         if action == 'attack':
@@ -272,8 +303,16 @@ def encounter(player, monster):
                 player.cast_spell(spell_name, monster)
             else:
                 print("ya fail to cast the spell.")
+
+        elif action == "skill":
+            if player.skills[0] is not None or player.skills[1] is not None or player.skills[2] is not None:
+                skill_name = input("Enter the skill name to use: ").strip()
+                player.use_skill(skill_name, monster)
+            else:
+                print("ya fail to use the skill.")
         else:
             print("dumdass dont smash your keyboard!!!")
+
         if monster.current_health <= 0:
             print(f"congrats,your SOOOO good, well this is only thy beginning, you have slain a {monster.name}!")
             print("you may earn these items:")
@@ -286,6 +325,7 @@ def encounter(player, monster):
             print(f"you found {looted_items} and {loot_gold} gold from the {monster.name}, u RICH now")
             player.inventory.extend(looted_items)
             player.gold += loot_gold
+
             break
         else:
             if not has_dodged:

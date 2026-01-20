@@ -62,14 +62,20 @@ player = game.PlayerCharacter(character_name, player_class, attr)
 if player_class == "Warrior":
     player.equip_armor(game.Armor("chainmail","chainmail"))
     player.equip_weapon(game.Weapon("longsword","1d8"))
+
+    power_strike_skill = game.Skill("Power Strike", "4d6", 150)
+    player.learn_skill(power_strike_skill)
 elif player_class == "Rogue":
     player.equip_armor(game.Armor("leather armor","leather armor"))
     player.equip_weapon(game.Weapon("dagger","1d4"))
+
+    backstab_skill = game.Skill("Backstab", "3d8", 200)
+    player.learn_skill(backstab_skill)
 elif player_class == "Mage":
     player.equip_armor(game.Armor("cloth armor","cloth armor"))
     player.equip_weapon(game.Weapon("staff","1d6"))
 
-    fireball_spell = game.Spell("Fireball", "1d6", 120)
+    fireball_spell = game.Spell("Fireball", "2d10", 120)
     player.learn_spell(fireball_spell)
 else:
     player.equip_armor(game.Armor("cloth armor","cloth armor"))
