@@ -175,12 +175,15 @@ while True:
     elif action.startswith('use '):
         item = action.split()[1].lower()
         if player.is_in_inventory(item):
-            if item == 'key' and current_room == 'cell':
+            if item.lower() == 'key' and current_room == 'cell':
                 player.use_item('key')
                 print("You used the key to unlock the gate to a dilapidated hallway.")
                 rooms['cell']['east'] = 'Hallway'
                 rooms['cell']['description'] = rooms['cell']['description'].replace("The door is locked.","The door is now unlocked.")
                 #player.inventory.remove('key')
+            elif isinstance(item, game.Consumable):
+                player.use_item(item)
+                player.remove_item(item)
             else:
                 print(f"You can't use the {item} here.")
         else:

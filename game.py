@@ -27,15 +27,25 @@ class Consumable(Item):
         super().__init__(name)
         self.effect = effect
         self.amount = amount
+        self.is_used = False
 
     def use(self, character):
-        if self.effect == "heal":
-            character.current_health += self.amount
-            if character.current_health > character.max_health:
-                character.current_health = character.max_health
-            print(f"{character.name} used {self.amount} and healed 10 health points.")
+        if not self.is_used:
+            self.effect(character, self.amount)
+            self.is_used = True
         else:
-            print(f"{self.name} has no effect.")
+            print(f"The {self.name} has already been used.")
+
+def heal_effect(character, amount):
+    character.current_health += amount
+    if character.current_health > character.max_health:
+        character.current_health = character.max_health
+    print(f"{character.name} healed for {amount} health points! Current health: {character.current_health}/{character.max_health}")
+
+class HealthPotion(Consumable):
+    def __init__(self, name, amount):
+        super().__init__(name, heal_effect, amount)
+
 class Weapon(Item):
     def __init__(self, name, damage_dice):  
         super().__init__(name)
@@ -194,7 +204,7 @@ class PlayerCharacter(Character):
     def use_item(self, item_name):
         for index, item in enumerate (self.inventory):
             if item.name.lower() == item_name.lower():
-                if isinstance(item, Consumable):
+                if issubclass(item, Consumable):
                     print(f"Using item: {item.name}")
                     item.use(self)
                 del self.inventory[index]
@@ -270,12 +280,18 @@ def encounter(player, monster):
 
     loot_list = [
         Armor("cloth armor", "cloth armor"),
+        HealthPotion("Small Health Potion", "heal", 10),
         Weapon("sword", "1d6"),
         Weapon("dagger", "1d4"),
+        HealthPotion("Small Health Potion", "heal", 10),
         Weapon("staff", "1d4"),
         Weapon("mace", "1d6"),
-        Weapon("axe", "1d6")
+        Weapon("axe", "1d6"),
+        HealthPotion("Small Health Potion", "heal", 10),
+        HealthPotion("Medium Health Potion", "heal", 20),
+
     ]
+    
 
     print(loot_list)
     loot_list = [Armor("cloth armor", "cloth armor"),Armor("leather armor", "leather armor"),Armor("chainmail armor", "chainmail armor"),Armor("plate armor", "plate armor"),Armor("dragon scale", "dragon scale"),Weapon("sword", "1d6"),Weapon("dagger", "1d4"),Weapon("staff", "1d4"),Weapon("mace", "1d6"),Weapon("axe", "1d6")]

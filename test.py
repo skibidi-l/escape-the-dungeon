@@ -1,5 +1,5 @@
 import unittest
-from game import Armor, Character, Consumable, PlayerCharacter, Attributes, Weapon, NonPlayerCharacter, Spell, Skill
+from game import Armor, Character, Consumable, PlayerCharacter, Attributes, Weapon, NonPlayerCharacter, Spell, Skill, HealthPotion
 class TestPlayerCharacter(unittest.TestCase):
     def test_create_new_player_character(self):
         attr = Attributes(5, 5, 5)
@@ -17,15 +17,15 @@ class TestPlayerCharacter(unittest.TestCase):
 
 
         player.current_health = 1
-        health_potion = Consumable("Health Potion", "heal", 10)
+        health_potion = HealthPotion("Small Health Potion", 10)
         player.inventory.append(health_potion)
-        player.use_item("Health Potion")
+        player.use_item("Small Health Potion")
         self.assertEqual(player.current_health, 11)
         
         player.current_health = player.max_health - 5
-        potion2 = Consumable("Health Potion", "heal", 10)
+        potion2 = HealthPotion("Medium Health Potion", 20)
         player.inventory.append(potion2)
-        player.use_item("Health Potion")
+        player.use_item("Medium Health Potion")
         self.assertEqual(player.current_health, player.max_health)
           # 10 + 10 from potion
 
