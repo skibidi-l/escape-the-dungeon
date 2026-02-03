@@ -80,7 +80,11 @@ elif player_class == "Mage":
 else:
     player.equip_armor(game.Armor("cloth armor","cloth armor"))
     player.equip_weapon(game.Weapon("sword","1d6"))
+
+player.inventory.append(game.HealthPotion("Small Health Potion", 10))
+player.inventory.append(game.ThrowingKnife("throwing knife", "2d4"))
 player.show_stats()
+
 
 
 skeleton_monster = game.NonPlayerCharacter("skeleton","undead",game.Attributes(4, 2, 0))
@@ -166,14 +170,14 @@ while True:
         else:
             print("Invalid direction, try again.")
     elif action.startswith('take '):
-        item = action.removeprefix('take ').lower()
+        item = action.removeprefix('take ')
         if 'item' in rooms[current_room] and item == rooms[current_room]['item']:
             player.inventory.append(game.QuestItem(rooms[current_room].pop('item')))
             print(f"You picked up the {item}.")
         else:
              print("No such item is here.")
     elif action.startswith('use '):
-        item = action.split()[1].lower()
+        item = action.removeprefix('use ')
         if player.is_in_inventory(item):
             if item.lower() == 'key' and current_room == 'cell':
                 player.use_item('key')
@@ -181,11 +185,9 @@ while True:
                 rooms['cell']['east'] = 'Hallway'
                 rooms['cell']['description'] = rooms['cell']['description'].replace("The door is locked.","The door is now unlocked.")
                 #player.inventory.remove('key')
-            elif isinstance(item, game.Consumable):
-                player.use_item(item)
-                player.remove_item(item)
             else:
-                print(f"You can't use the {item} here.")
+                player.use_item(item)
+   
         else:
             print(f"you don't have the {item} in your inventory.")
     elif action == 'inventory':

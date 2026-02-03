@@ -46,6 +46,17 @@ class HealthPotion(Consumable):
     def __init__(self, name, amount):
         super().__init__(name, heal_effect, amount)
 
+def deal_damage_effect(enemy, damage_dice):
+    number_of_dice = int(damage_dice.split('d')[0])
+    sides_per_die = int(damage_dice.split('d')[1])
+    damage = roll_dice(sides_per_die, number_of_dice)
+    enemy.current_health -= damage
+    print(f"{enemy.name} took {damage} damage! Current health: {enemy.current_health}")
+
+class ThrowingKnife(Consumable):
+    def __init__(self, name,  damage_dice):
+        super().__init__(name, deal_damage_effect, damage_dice)
+
 class Weapon(Item):
     def __init__(self, name, damage_dice):  
         super().__init__(name)
@@ -204,7 +215,7 @@ class PlayerCharacter(Character):
     def use_item(self, item_name):
         for index, item in enumerate (self.inventory):
             if item.name.lower() == item_name.lower():
-                if issubclass(item, Consumable):
+                if isinstance(item, Consumable):
                     print(f"Using item: {item.name}")
                     item.use(self)
                 del self.inventory[index]
@@ -242,6 +253,7 @@ class Spell:
       sides_per_die = int(self.damage_dice.split('d')[1])
       number_of_dice = int(self.damage_dice.split('d')[0])
       damage = roll_dice(sides_per_die, number_of_dice)
+      enemy.current_health -= damage
       print(f"You cast {self.name}, dealing {damage} damage to the {enemy.name}!")
 class Skill:
     def __init__(self, name, damage_dice, stamina_cost):
@@ -280,16 +292,16 @@ def encounter(player, monster):
 
     loot_list = [
         Armor("cloth armor", "cloth armor"),
-        HealthPotion("Small Health Potion", "heal", 10),
+        HealthPotion("Small Health Potion",  10),
         Weapon("sword", "1d6"),
         Weapon("dagger", "1d4"),
-        HealthPotion("Small Health Potion", "heal", 10),
+        HealthPotion("Small Health Potion",  10),
         Weapon("staff", "1d4"),
         Weapon("mace", "1d6"),
         Weapon("axe", "1d6"),
-        HealthPotion("Small Health Potion", "heal", 10),
-        HealthPotion("Medium Health Potion", "heal", 20),
-
+        HealthPotion("Small Health Potion",  10),
+        HealthPotion("Medium Health Potion",  20),
+        ThrowingKnife("throwing knife", "2d4"),
     ]
     
 
@@ -298,7 +310,7 @@ def encounter(player, monster):
     while True:
         if player.current_health <= 0:
             break
-        action = input("Choose action: attack / dodge / spell / skill: ").lower()
+        action = input("Choose action: attack / dodge / spell / skill / use [consumable]: ").lower()
         has_dodged = False
         
         if action == 'attack':
@@ -326,6 +338,11 @@ def encounter(player, monster):
                 player.use_skill(skill_name, monster)
             else:
                 print("ya fail to use the skill.")
+
+        elif action.startswith("use "):
+            item_name = action.removeprefix("use ").strip()
+            if player.is_in_inventory(item_name):
+                player.use_item(item_name)
         else:
             print("dumdass dont smash your keyboard!!!")
 
