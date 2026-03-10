@@ -1,8 +1,10 @@
 
+from textual import on
+
 import game
 import random
 
-from textual.app  import App, ComposeResult
+from textual.app  import App, ComposeResult, on
 from textual.containers import HorizontalGroup, VerticalGroup, VerticalScroll
 from textual.widgets import Header, Footer, Input, Markdown
 
@@ -10,6 +12,7 @@ class TextAdventureApp(App):
 
     def __init__(self):
         super().__init__()
+        self.command_history = []   
 
     def compose(self) -> ComposeResult:
         yield Header()
@@ -19,6 +22,38 @@ class TextAdventureApp(App):
         )
             
         yield Footer()
+
+    def on_mount(self) -> None:
+        self.query_one("#command-input").focus()
+
+    @on(Input.Submitted, "#command-input")
+    def handle_command(self, event: Input.Submitted) -> None:
+        command = event.value.strip()
+        if not command:
+            return
+        
+        event.input.value = ""
+
+        self.command_history.append(f"> **{command}**")
+
+
+        if command.lower() == "start":
+            Response = "welcome to escape the dungeon! Your adventure begins now..."
+            self.command_history.append(Response)
+        elif command.lower() in ["quit", "exit"]:
+            Response = "Press control + Q to exit the game!"
+            self.command_history.append(Response)
+           
+
+
+        self.update_history()
+    
+
+
+    def update_history(self) -> None:
+        history_scroll = self.query_one("#history-scroll")
+        history_scroll.mount(Response("\n\n".join(self.command_history[-2:])))
+        history_scroll.scroll_end(animate=False)
 
 class RecentHistoryWindow(VerticalGroup):
 
@@ -66,6 +101,8 @@ class StatusWindow(VerticalScroll):
     def compose(self) -> ComposeResult:
         yield Response("Room Status\n\n ", id="status")
 
+    def _on_mount(self):
+        self.border_title = "status"
 class CharacterSheetWindow(VerticalScroll):
     DEFAULT_CSS = """
     CharacterSheetWindow {
@@ -76,6 +113,10 @@ class CharacterSheetWindow(VerticalScroll):
     """
     def compose(self) -> ComposeResult:
         yield Response("Character Sheet\n\n ", id="character-sheet")
+
+    def _on_mount(self):
+        self.border_title = "character sheet"
+
 def game_loop():
 
     # npc = Character("smily", "npc", Attributes(5, 3, 2))
