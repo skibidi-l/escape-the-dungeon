@@ -13,7 +13,7 @@ class TextAdventureApp(App):
     def __init__(self):
         super().__init__()
         self.command_history = []   
-
+        self.game_engine = GameEngine()
     def compose(self) -> ComposeResult:
         yield Header()
         yield HorizontalGroup(
@@ -34,25 +34,23 @@ class TextAdventureApp(App):
         
         event.input.value = ""
 
-        self.command_history.append(f"> **{command}**")
+        command_text = f"> **{command}**\n\n"
+        self.command_history.append(f"> **{command}**\n\n")
+        
 
 
-        if command.lower() == "start":
-            Response = "welcome to escape the dungeon! Your adventure begins now..."
-            self.command_history.append(Response)
-        elif command.lower() in ["quit", "exit"]:
-            Response = "Press control + Q to exit the game!"
-            self.command_history.append(Response)
-           
+        response = self.game_engine.response_to_command(command)
+        self.command_history.append(response)
+            
 
 
-        self.update_history()
+        self.update_history(command_text, response)
     
 
 
-    def update_history(self) -> None:
+    def update_history(self, command_text: str, response: str) -> None:
         history_scroll = self.query_one("#history-scroll")
-        history_scroll.mount(Response("\n\n".join(self.command_history[-2:])))
+        history_scroll.mount(Response(command_text + response))
         history_scroll.scroll_end(animate=False)
 
 class RecentHistoryWindow(VerticalGroup):
@@ -117,6 +115,37 @@ class CharacterSheetWindow(VerticalScroll):
     def _on_mount(self):
         self.border_title = "character sheet"
 
+class GameEngine:
+    def __init__(self):
+        self.player = None
+        self.current_room = None
+        self.rooms = {}
+
+
+        skeleton_monster = game.NonPlayerCharacter("skeleton","undead",game.Attributes(4, 2, 0))
+        skeleton_monster.equip_armor(game.Armor("leather armor","leather armor"))
+        skeleton_monster.equip_weapon(game.Weapon("iron sword","1d6"))
+        goblin_monster = game.NonPlayerCharacter("goblin","goblin",game.Attributes(3, 4, 0))
+        goblin_monster.equip_armor(game.Armor("leather armor","leather armor"))
+        goblin_monster.equip_weapon(game.Weapon("club","1d6"))
+        zombie_monster = game.NonPlayerCharacter("zombie","undead",game.Attributes(5, 1, 0))
+        zombie_monster.equip_armor(game.Armor("cloth armor","cloth armor"))
+        zombie_monster.equip_weapon(game.Weapon("claws","1d4"))
+        DRAGON_monster= game.NonPlayerCharacter("DRAGON","dragon",game.Attributes(20,10,5))
+        DRAGON_monster.equip_armor(game.Armor("dragon scale","dragon scale"))
+        DRAGON_monster.equip_weapon(game.Weapon("fire breath","3d6"))
+
+        self.monsters = [skeleton_monster,goblin_monster,zombie_monster,DRAGON_monster]
+        self.state = "not_started"
+
+    def response_to_command(self,command: str) -> str:
+        command = command.strip().lower()
+        if command == "Start":
+            return "welcome to escape the dungeon! Your adventure begins now..."
+        elif command in ["quit", "exit"]:
+            return "Press control + Q to exit the game!"
+        else:
+            return "Unknown command. Please try again."
 def game_loop():
 
     # npc = Character("smily", "npc", Attributes(5, 3, 2))
@@ -144,7 +173,8 @@ def game_loop():
     # def get_armor_value(character):
     #     return armor_value[character["equipments"]["armor"]]
 
-        
+    skeleton_monster = game.NonPlayerCharacter("skeleton","undead",game.Attributes(4, 2, 0))
+
     # --- Create Character ---
     print("Welcome to Escape the Dungeon!")
     character_name = input("What is your name, BRAVE adventurer??? ")
