@@ -40,12 +40,19 @@ class TextAdventureApp(App):
 
 
         response = self.game_engine.response_to_command(command)
-        self.command_history.append(response)
-            
+        self.command_history.append(response["game_response"])
 
 
-        self.update_history(command_text, response)
-    
+
+        self.update_history(command_text, response["game_response"])
+
+        if "status_update" in response:
+            status_window = self.query_one("#status")
+            status_window.update(response["status_update"])
+
+        if "character_update" in response:
+            character_sheet_window = self.query_one("#character-sheet")
+            character_sheet_window.update(response["character_update"])
 
 
     def update_history(self, command_text: str, response: str) -> None:
@@ -116,10 +123,41 @@ class CharacterSheetWindow(VerticalScroll):
         self.border_title = "character sheet"
 
 class GameEngine:
+    NOT_STARTED = "not_started"
+    CHAR_CREATION = "character_creation"
+    EXPLORATION = "exploration"
+    COMBAT = "combat"
+    COMPLETED = "completed"
+    GAME_OVER = "game_over"
+
+
     def __init__(self):
         self.player = None
-        self.current_room = None
-        self.rooms = {}
+        self.current_room = "Cell"
+        self.rooms = {
+            'Cell': {
+                'description': 'A cold, dark cell. The door is locked.',
+                'east': "Hallway (locked)",
+                'item': "key",
+                },
+            "Hallway": {
+                'description': "A dim hallway that leads to a heavy iron gate that acts as a roadblock to the northword path.",
+                'west': 'cell',
+                'encounter' : True,
+                'north': 'Armory',
+            },
+            "Armory": {
+                'description': "A room filled with rusty weapons were a glowing staff beckons you to grab it.",
+                'south': 'Hallway',
+                'item': "magic staff",
+                'encounter' : True,
+                'east': "Exit",
+            },
+            "Exit": {
+                'description': "A ancient door that is riddled with arcane symbols, it seems to be locked with a magical seal.",
+                'west': "Armory",
+            }
+        }
 
 
         skeleton_monster = game.NonPlayerCharacter("skeleton","undead",game.Attributes(4, 2, 0))
@@ -136,16 +174,46 @@ class GameEngine:
         DRAGON_monster.equip_weapon(game.Weapon("fire breath","3d6"))
 
         self.monsters = [skeleton_monster,goblin_monster,zombie_monster,DRAGON_monster]
-        self.state = "not_started"
+        self.state = self.NOT_STARTED
+        self.player = None
 
     def response_to_command(self,command: str) -> str:
         command = command.strip().lower()
-        if command == "Start":
-            return "welcome to escape the dungeon! Your adventure begins now..."
-        elif command in ["quit", "exit"]:
-            return "Press control + Q to exit the game!"
+
+        if command in ["quit", "exit"]:
+            return {"game_response": "Press Ctrl+Q to exit the game."}
+        
+        if self.state == self.NOT_STARTED:
+            if command == "start":
+                self.state = self.CHAR_CREATION
+                self.player = game.PlayerCharacter("Hero", "Warrior", game.Attributes(8, 4, 2))
+                return {
+                    "game_response": "Welcome to Escape the Dungeon! Your adventure begins now. Type 'help' for a list of commands.",
+                    "status_update": self.rooms[self.current_room]['description'],
+                    "character_sheet": self.player.get_status()
+                }
+            else:
+                return {"game_response": "Please type 'start' to begin your adventure!"}
+        elif self.state == self.EXPLORATION:
+            pass
+
+        elif self.state == self.COMBAT:
+            pass
+
+        
+    def process_command(self, command: str) -> str:
+        if self.state == self.NOT_STARTED:
+            return "Please type 'start' to begin your adventure!"
+        if self.state == self.CHAR_CREATION:
+            return self.handle_character_creation(command)
+        elif self.state == self.EXPLORATION:
+            return self.handle_exploration(command)
+        elif self.state == self.COMBAT:
+            return self.handle_combat(command)
         else:
-            return "Unknown command. Please try again."
+            return "The game is not in a valid state."
+        
+
 def game_loop():
 
     # npc = Character("smily", "npc", Attributes(5, 3, 2))
