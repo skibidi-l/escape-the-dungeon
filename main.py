@@ -180,25 +180,51 @@ class GameEngine:
     def response_to_command(self,command: str) -> str:
         command = command.strip().lower()
 
-        if command in ["quit", "exit"]:
-            return {"game_response": "Press Ctrl+Q to exit the game."}
         
         if self.state == self.NOT_STARTED:
             if command == "start":
                 self.state = self.CHAR_CREATION
                 self.player = game.PlayerCharacter("Hero", "Warrior", game.Attributes(8, 4, 2))
+                self.player.equip_armor(game.Armor("chainmail","chainmail"))
+                self.player.equip_weapon(game.Weapon("longsword","1d8"))
+
+                power_strike_skill = game.Skill("Power Strike", "4d6", 150)
+                self.player.learn_skill(power_strike_skill)
+
+                self.state = self.EXPLORATION
+                response = "welcome to Escape the Dungeon! Your adventure begins now."
+
+                room_status = f"You are in the {self.current_room}. \n\n{self.rooms[self.current_room]['description']}"
+                if "item" in self.rooms[self.current_room]:
+                    room_status += f"\n\nwhere would you like to go?"
+
+                response += "\n\navailable commands : go [direction] / take [item] / use [item] / stats / exit / inventory / equip [weapon/armor]"
+                response += "\n\nwhat would you like to do?"
+
                 return {
-                    "game_response": "Welcome to Escape the Dungeon! Your adventure begins now. Type 'help' for a list of commands.",
-                    "status_update": self.rooms[self.current_room]['description'],
-                    "character_sheet": self.player.get_status()
+                    "game_response": response,
+                    "status_update": room_status,
+                    "character_update": self.player.get_status()
                 }
             else:
                 return {"game_response": "Please type 'start' to begin your adventure!"}
         elif self.state == self.EXPLORATION:
-            pass
-
+            if command.startswith("go"):
+                direction = command.split()[1]
+                if direction in self.rooms[self.current_room]:
+                    if self.rooms[self.current_room][direction].lower().endswith("(locked)"):
+                        return {"game_response": "The door is locked. You need a key to proceed."}
+                    else:
+                        self.current_room = 'exit':
+                        self.stat = self.COMPLETED
+                        response = "\n\nCongratulations! You've escaped the dungeon!"
         elif self.state == self.COMBAT:
             pass
+
+        if command in ["quit", "exit"]:
+            return {"game_response": "Press Ctrl+Q to exit the game."}
+        else:
+            return {"game_response": "Command not recognized. Try again?"}
 
         
     def process_command(self, command: str) -> str:
