@@ -215,30 +215,77 @@ class GameEngine:
                     if self.rooms[self.current_room][direction].lower().endswith("(locked)"):
                         return {"game_response": "The door is locked. You need a key to proceed."}
                     else:
-                        self.current_room = 'exit':
-                        self.stat = self.COMPLETED
-                        response = "\n\nCongratulations! You've escaped the dungeon!"
-        elif self.state == self.COMBAT:
-            pass
+                        self.current_room = self.rooms[self.current_room][direction]
+                        response = f"You move {direction} and enter the {self.current_room}."
 
-        if command in ["quit", "exit"]:
-            return {"game_response": "Press Ctrl+Q to exit the game."}
-        else:
-            return {"game_response": "Command not recognized. Try again?"}
+                        if self.current_room == "Exit":
+                            self.state = self.COMPLETED
+                            response += "\n\nCongratulations! You've escaped the dungeon!"
+                            return {"game_response": response}
+                        
+                        room_status = f"You are in the {self.current_room}. \n\n{self.rooms[self.current_room]['description']}"
+                        if "item" in self.rooms[self.current_room]:
+                            room_status += f"\n\nwhere would you like to go?"
 
-        
-    def process_command(self, command: str) -> str:
-        if self.state == self.NOT_STARTED:
-            return "Please type 'start' to begin your adventure!"
-        if self.state == self.CHAR_CREATION:
-            return self.handle_character_creation(command)
-        elif self.state == self.EXPLORATION:
-            return self.handle_exploration(command)
-        elif self.state == self.COMBAT:
-            return self.handle_combat(command)
-        else:
-            return "The game is not in a valid state."
-        
+                        response += "\n\navailable commands : go [direction] / take [item] / use [item] / stats / exit / inventory / equip [weapon/armor]"
+                        response += "\n\nwhat would you like to do?"
+
+                        return {
+                            "game_response": response,
+                            "status_update": room_status,
+                        }
+                    
+            elif command.startswith("take"):
+                item = command.removeprefix("take ").lower()
+                if "item" in self.rooms[self.current_room] and item == self.rooms[self.current_room]['item']:
+                    self.player.inventory.append(game.QuestItem(self.rooms[self.current_room].pop('item')))
+                    return {
+                        "game_response": f"You picked up the {item}.",
+                        "character_update": self.player.get_status()
+                    }
+                else:
+                    return {"game_response": "No such item is here."}
+            elif command.startswith("use "):
+                item = command.removeprefix("use ")
+                if self.player.is_in_inventory(item):
+                    if item.lower() == 'key' and self.current_room == 'Cell':
+                        self.player.use_item('key')
+                        self.rooms['Cell']['east'] = 'Hallway'
+                        self.rooms['Cell']['description'] = self.rooms['Cell']['description'].replace("The door is locked.","The door is now unlocked.")
+                        return {
+                            "game_response": "You used the key to unlock the gate to a dilapidated hallway.",
+                            "status_update": f"You are in the {self.current_room}. \n\n{self.rooms[self.current_room]['description']}",
+                            "character_update": self.player.get_status(),
+                        }
+                    else:
+                        self.player.use_item(item)
+                        return {
+                            "game_response": f"You used the {item}.",
+                            "character_update": self.player.get_status()
+                        }
+                else:
+                    return {"game_response": f"you don't have the {item} in your inventory."}
+            elif command == "inventory":
+                if self.player.inventory:
+                    inventory_list = "\n".join([f"- {item.name}" for item in self.player.inventory])
+                    return {"game_response": f"Your inventory contains:\n{inventory_list}"}
+                else:
+                    return {"game_response": "Your inventory is empty."}
+            elif command.startswith("equip "):
+                equip_item = command.removeprefix("equip ").lower()
+                if self.player.is_in_inventory(equip_item):
+                    self.player.equip(equip_item)
+                    return {
+                        "game_response": f"You equipped the {equip_item}.",
+                        "character_update": self.player.get_status()
+                    }
+                else:
+                    return {"game_response": f"you don't have the {equip_item} in your inventory."}
+                    
+
+
+
+
 
 def game_loop():
 
