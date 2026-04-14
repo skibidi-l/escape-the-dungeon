@@ -165,14 +165,17 @@ class PlayerCharacter(Character):
                     del self.inventory[index]
                     self.equip_weapon(item)
                     print(f"you have equiped the weapon: {item.name}")
+                    return True
                 elif isinstance(item, Armor):
                     self.unequip_armor()
                     del self.inventory[index]
                     print(f"you have equiped the armor: {item.name}")
+                    return True
                 else:
                     print(f"you cannot equip the item: {item.name}, it is neither a weapon nor armor")
 
                 break
+        return False
 
     def learn_spell(self, spell):
         for i in range(len(self.spells)):
