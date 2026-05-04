@@ -10,13 +10,11 @@ class GameState:
     GAME_OVER = "game_over"
 
     def get_available_actions(self):
-        pass
+        return f"Available actions: {', '.join(self.available_actions)}"
 
     def reponse_to_command(self, command: str):
         pass
-class LetStartState(GameState):
-    def __init__(self):
-        self.available_actions = ["start"]
+
 
     def get_available_actions(self) -> dict:
         return f"Available actions: {', '.join(self.available_actions)}"
@@ -26,6 +24,69 @@ class LetStartState(GameState):
             return {"game_response": "welcome to Escape the Dungeon! Your adventure begins now."}
         else:
             return {"game_response": "Please type 'start' to begin your adventure!"}
+class NotStartedState(GameState):
+    def __init__(self):
+        self.available_actions = ["start"]
+    
+    def reponse_to_command(self, command: str) -> dict:
+        if command == "start":
+            return {"game_response": "welcome to Escape the Dungeon! Your adventure begins now."}
+        else:
+            return {"game_response": "Please type 'start' to begin your adventure!"}
+        
+class CharacterCreationState(GameState):
+    def __init__(self):
+        self.available_actions = []
+
+    def get_available_actions(self) -> str:
+        return f"Available actions: {', '.join(self.available_actions)}"
+    
+    def reponse_to_command(self, command: str) -> dict:
+        pass
+
+class ExplorationState(GameState):
+    def __init__(self):
+        self.available_actions = ["go [direction]", "take [item]", "use [item]", "stats", "exit", "inventory", "equip [weapon/armor]"]
+
+    def _go_to(self, direction: str) -> dict:
+        pass
+
+    def reponse_to_command(self, command: str) -> dict:
+
+        if command.startswith("go"):
+            direction = command.split()[1].lower()
+            return self._go_to(direction)
+        
+        elif command.startswith("take"):
+            item = command.removeprefix("take ").lower()
+            return self._take(item)
+        
+        elif command.startswith("use "):
+            item = command.removeprefix("use ").lower()
+            return self._use(item)
+        
+        elif command == "inventory":
+            return self._inventory()
+        
+        elif command.startswith("equip "):
+            equip_item = command.removeprefix("equip ").lower()
+            return self._equip(equip_item)
+
+    def _go_to(self, direction: str) -> dict:
+        pass
+    
+    def _take(self, item: str) -> dict:
+        pass
+
+    def _use(self, item: str) -> dict:
+        pass
+
+    def _inventory(self) -> dict:
+        pass
+
+    def _equip(self, equip_item: str) -> dict:
+        pass
+
 
 class GameEngine:
     NOT_STARTED = "not_started"
@@ -36,57 +97,57 @@ class GameEngine:
     GAME_OVER = "game_over"
 
 
-    def __init__(self):
-        self.player = None
-        self.current_room = "Cell"
-        self.rooms = {
-            'Cell': {
-                'description': 'A cold, dark cell. The door is locked.',
-                'east': "Hallway (locked)",
-                'item': "key",
-                },
-            "Hallway": {
-                'description': "A dim hallway that leads to a heavy iron gate that acts as a roadblock to the northword path.",
-                'west': 'cell',
-                'encounter' : True,
-                'north': 'Armory',
+def __init__(self):
+    self.player = None
+    self.current_room = "Cell"
+    self.rooms = {
+        'Cell': {
+            'description': 'A cold, dark cell. The door is locked.',
+            'east': "Hallway (locked)",
+            'item': "key",
             },
-            "Armory": {
-                'description': "A room filled with rusty weapons were a glowing staff beckons you to grab it.",
-                'south': 'Hallway',
-                'item': "magic staff",
-                'encounter' : True,
-                'east': "Exit",
-            },
-            "Exit": {
-                'description': "A ancient door that is riddled with arcane symbols, it seems to be locked with a magical seal.",
-                'west': "Armory",
-            }
+        "Hallway": {
+            'description': "A dim hallway that leads to a heavy iron gate that acts as a roadblock to the northword path.",
+            'west': 'cell',
+            'encounter' : True,
+            'north': 'Armory',
+        },
+        "Armory": {
+            'description': "A room filled with rusty weapons were a glowing staff beckons you to grab it.",
+            'south': 'Hallway',
+            'item': "magic staff",
+            'encounter' : True,
+            'east': "Exit",
+        },
+        "Exit": {
+            'description': "A ancient door that is riddled with arcane symbols, it seems to be locked with a magical seal.",
+            'west': "Armory",
         }
+    }
 
 
-        skeleton_monster = game.NonPlayerCharacter("skeleton","undead",game.Attributes(4, 2, 0))
-        skeleton_monster.equip_armor(game.Armor("leather armor","leather armor"))
-        skeleton_monster.equip_weapon(game.Weapon("iron sword","1d6"))
-        goblin_monster = game.NonPlayerCharacter("goblin","goblin",game.Attributes(3, 4, 0))
-        goblin_monster.equip_armor(game.Armor("leather armor","leather armor"))
-        goblin_monster.equip_weapon(game.Weapon("club","1d6"))
-        zombie_monster = game.NonPlayerCharacter("zombie","undead",game.Attributes(5, 1, 0))
-        zombie_monster.equip_armor(game.Armor("cloth armor","cloth armor"))
-        zombie_monster.equip_weapon(game.Weapon("claws","1d4"))
-        DRAGON_monster= game.NonPlayerCharacter("DRAGON","dragon",game.Attributes(20,10,5))
-        DRAGON_monster.equip_armor(game.Armor("dragon scale","dragon scale"))
-        DRAGON_monster.equip_weapon(game.Weapon("fire breath","3d6"))
+    skeleton_monster = game.NonPlayerCharacter("skeleton","undead",game.Attributes(4, 2, 0))
+    skeleton_monster.equip_armor(game.Armor("leather armor","leather armor"))
+    skeleton_monster.equip_weapon(game.Weapon("iron sword","1d6"))
+    goblin_monster = game.NonPlayerCharacter("goblin","goblin",game.Attributes(3, 4, 0))
+    goblin_monster.equip_armor(game.Armor("leather armor","leather armor"))
+    goblin_monster.equip_weapon(game.Weapon("club","1d6"))
+    zombie_monster = game.NonPlayerCharacter("zombie","undead",game.Attributes(5, 1, 0))
+    zombie_monster.equip_armor(game.Armor("cloth armor","cloth armor"))
+    zombie_monster.equip_weapon(game.Weapon("claws","1d4"))
+    DRAGON_monster= game.NonPlayerCharacter("DRAGON","dragon",game.Attributes(20,10,5))
+    DRAGON_monster.equip_armor(game.Armor("dragon scale","dragon scale"))
+    DRAGON_monster.equip_weapon(game.Weapon("fire breath","3d6"))
 
-        self.monsters = [skeleton_monster,goblin_monster,zombie_monster,DRAGON_monster]
-        self.state = self.NOT_STARTED
-        self.enemy = None
+    self.monsters = [skeleton_monster,goblin_monster,zombie_monster,DRAGON_monster]
+    self.state = self.NOT_STARTED
+    self.enemy = None
 
-    def response_to_command(self,command: str) -> str:
-        command = command.strip().lower()
+def response_to_command(self,command: str) -> str:
+    command = command.strip().lower()
 
         
-        if self.state == self.NOT_STARTED:
+    if self.state == self.NOT_STARTED:
             if command == "start":
                 self.state = self.CHAR_CREATION
                 self.player = game.PlayerCharacter("Hero", "Warrior", game.Attributes(8, 4, 2))
@@ -113,7 +174,7 @@ class GameEngine:
                 }
             else:
                 return {"game_response": "Please type 'start' to begin your adventure!"}
-        elif self.state == self.EXPLORATION:
+    elif self.state == self.EXPLORATION:
             if command.startswith("go"):
                 direction = command.split()[1]
                 if direction in self.rooms[self.current_room]:
