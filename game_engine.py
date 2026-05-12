@@ -40,10 +40,13 @@ class NotStartedState(GameState):
             response += "\n\n" + next_state.get_available_actions()
             response += "\n\nwhat do you want to do?"
 
-            character_update = self.game_engine.player.get_stated()
+            character_update = self.game_engine.player.get_status()
 
-            return {"game_response": "welcome to Escape the Dungeon! Your adventure begins now.",
-                    "next_state": CharacterCreationState(self.game_engine)
+            return {
+                "game_response": response,
+                "status_update": room_status,
+                "character_update": character_update,
+                "next_state": next_state
                     }
         else:
             return {"game_response": "Please type 'start' to begin your adventure!"}
@@ -86,8 +89,25 @@ class ExplorationState(GameState):
             return self._equip(equip_item)
 
     def _go_to(self, direction: str) -> dict:
-        pass
-    
+        response = self.game_engine.go_to(direction)
+        room_status = self.game_engine.get_room_status()
+        next_state = self
+
+        if self.game_engine.is_encounter():
+            next_state = CombatState(self.game_engine)
+            self.game_engine.enemy = random.choice(self.game_engine.monsters)
+            response += f"\n\nAs you enter the {self.game_engine.current_room}, you encounter a {self.game_engine.enemy.name}!"
+        else:
+            response += "\n\n" + self.get_available_actions()
+            response += "\n\nwhat do you want to do?"
+
+        return {
+            "game_response": response,
+            "status_update": room_status,
+            "next_state": next_state
+        }
+
+
     def _take(self, item: str) -> dict:
         pass
 
@@ -100,6 +120,13 @@ class ExplorationState(GameState):
     def _equip(self, equip_item: str) -> dict:
         pass
 
+class CombatState(GameState):
+    def __init__(self, game_engine: 'GameEngine'):
+        super().__init__(game_engine)
+        self.available_actions = ["attack", "use [item]", "dodge", "spell", "skill"]
+
+    def response_to_command(self, command: str) -> dict:
+        pass
 
 class GameEngine:
     NOT_STARTED = "not_started"
@@ -163,7 +190,7 @@ class GameEngine:
             self.state = result["next_state"]
         return result
 
-    def create_player(self, name: str, char_class: str) -> game.PlayerCharacter:
+    def create_player(self) -> game.PlayerCharacter:
         self.player = game.PlayerCharacter("Adventurer", "Warrior", game.Attributes(8, 4, 2))
         self.player.equip_armor(game.Armor("chainmail", "chainmail"))
         self.player.equip_weapon(game.Weapon("longsword", "1d8"))
@@ -176,6 +203,21 @@ class GameEngine:
         if "item" in self.rooms[self.current_room]:
             room_status += f" You see a {self.rooms[self.current_room]['item']} here."
         return room_status
+    
+    def go_to(self, direction: str) -> str:
+        if direction in self.rooms[self.current_room]:
+            if self.rooms[self.current_room][direction].lower().endswith('(locked)'):
+                response = "The door is locked. You need to find a key to open it."
+            else:
+                self.current_room = self.rooms[self.current_room][direction]
+                response = f"You move {direction} to the {self.current_room}."
+
+            return response
+        else:
+            return "You can't go that way!"
+        
+    def is_encounter(self) -> bool:
+        return "encounter" in self.rooms[self.current_room] and self.rooms[self.current_room]['encounter'] == True
 
 
                     
