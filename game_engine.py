@@ -95,7 +95,7 @@ class ExplorationState(GameState):
         if "next_state" in result:
             next_state = result["next_state"]
 
-        response += "\n\n" + self.get_available_actions()
+        response += "\n\n" + next_state.get_available_actions()
         response += "\n\nwhat do you want to do?"
         character_update = self.game_engine.player.get_status()
         room_status = self.game_engine.get_room_status()
@@ -114,7 +114,7 @@ class ExplorationState(GameState):
             next_state = CombatState(self.game_engine)
             self.game_engine.enemy = random.choice(self.game_engine.monsters)
             response += f"\n\nAs you enter the {self.game_engine.current_room}, you encounter a {self.game_engine.enemy.name}!"
-
+            print(f"next state: {next_state}")
         return {
             "game_response": response,
             "next_state": next_state
@@ -140,7 +140,10 @@ class ExplorationState(GameState):
         }
 
     def _equip(self, equip_item: str) -> dict:
-        pass
+        response = self.game_engine.equip(equip_item)
+        return {
+            "game_response": response,
+        }
 
 class CombatState(GameState):
     def __init__(self, game_engine: 'GameEngine'):
@@ -148,8 +151,40 @@ class CombatState(GameState):
         self.available_actions = ["attack", "use [item]", "dodge", "spell", "skill"]
 
     def response_to_command(self, command: str) -> dict:
-        pass
+        next_state = self
+        result = {}
+        
+        if command == "attack":
+            response = self._attack()
+        elif command.startswith("use "):
+            consumable_item = command.removeprefix("use ").lower()
+            response = self._use(consumable_item)
 
+        response = result["game_response"]
+        if "next_state" in result:
+            next_state = result["next_state"]
+        response += "\n\n" + next_state.get_available_actions()
+        response += "\n\nwhat do you want to do?"
+        character_update = self.game_engine.player.get_status()
+        room_status = self.game_engine.get_room_status()
+        return {
+            "game_response": response,
+            "next_state": next_state,
+            "character_update": character_update,
+            "room_status": room_status
+        }
+
+    def _attack(self) -> dict:
+        response = self.game_engine.attack()
+        return {
+            "game_response": response,
+        }
+    def _use(self, consumable_item: str) -> dict:
+        response = self.game_engine.use(consumable_item)
+        return {
+            "game_response": response,
+        }
+    
 class GameEngine:
     NOT_STARTED = "not_started"
     CHAR_CREATION = "character_creation"
@@ -233,6 +268,11 @@ class GameEngine:
             else:
                 self.current_room = self.rooms[self.current_room][direction]
                 response = f"You move {direction} to the {self.current_room}."
+                if self.is_encounter():
+                    self.enemy = random.choice(self.monsters)
+                    self.player.start_combat()
+                    
+                
 
             return response
         else:
@@ -267,3 +307,17 @@ class GameEngine:
             return f"Your inventory contains...: \n{inventory_list}"
         else:
             return "Your inventory is empty."
+        
+    def equip(self, equip_item) -> str:
+        if self.player.is_in_inventory(equip_item):
+            is_equip_successful = self.player.equip_item(equip_item)
+            if is_equip_successful:
+                return f"You have equipped the {equip_item}."
+            else:
+                return f"You can't equip the {equip_item}."
+        else:
+            return f"you don't have the {equip_item}in your inventory."
+        
+    def attack(self) -> str:
+        damage = self.player.attack(self.enemy)
+        return f"You swing your weapon and deal {damage} damage to the {self.enemy.name}."
