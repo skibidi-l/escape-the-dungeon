@@ -155,12 +155,23 @@ class CombatState(GameState):
         result = {}
         
         if command == "attack":
-            response = self._attack()
+            result = self._attack()
         elif command.startswith("use "):
             consumable_item = command.removeprefix("use ").lower()
-            response = self._use(consumable_item)
+            result = self._use(consumable_item)
 
         response = result["game_response"]
+        if self.game_engine.is_in_combat():
+            monster_attack_result = self._monster_attack()
+            response += "\n\n" + monster_attack_result["game_response"]
+        elif self.game_engine.player.is_alive():
+            response += "\n\nYou have defeated the enemy!"
+            next_state = ExplorationState(self.game_engine)
+        else:
+            response += "\n\nYou have been defeated by the enemy...GAME OVER!"
+            next_state = GameOverState(self.game_engine)
+
+
         if "next_state" in result:
             next_state = result["next_state"]
         response += "\n\n" + next_state.get_available_actions()
@@ -184,7 +195,29 @@ class CombatState(GameState):
         return {
             "game_response": response,
         }
-    
+    def _monster_attack(self) -> dict:
+        response = self.game_engine.monster_attack()
+        return {
+            "game_response": response,
+        }
+
+class GameOverState(GameState):
+    def __init__(self, game_engine: 'GameEngine'):
+        super().__init__(game_engine)
+        self.available_actions = ["restart"]
+
+    def response_to_command(self, command: str) -> dict:
+        if command == "restart":
+            next_state = NotStartedState(self.game_engine)
+            response = "Game restarted. Type 'start' to begin your adventure!"
+            return {
+                "game_response": "Game restarted. Type 'start' to begin your adventure!",
+                "next_state": next_state
+            }
+        else:
+            return {
+                "game_response": "Invalid response, Please type 'restart' to start a new game!"
+            }
 class GameEngine:
     NOT_STARTED = "not_started"
     CHAR_CREATION = "character_creation"
@@ -320,4 +353,18 @@ class GameEngine:
         
     def attack(self) -> str:
         damage = self.player.attack(self.enemy)
+        response = f"you swing you {self.player.equipments.weapon.name} and deal {damage} damage to the {self.enemy.name}."
+        if self.enemy.current_health <= 0:
+            response += f"\n\nThe {self.enemy.name} has been mutilated to oblivion by your hand, YOU WIN!!!"
         return f"You swing your weapon and deal {damage} damage to the {self.enemy.name}."
+    
+    def monster_attack(self) -> str:
+        if self.enemy.current_health <= 0:
+            damage = self.enemy.attack(self.player)
+            return f"The {self.enemy.name} attacks you and deals {damage} damage."
+        return ""
+    
+    def is_in_combat(self) -> bool:
+        if self.enemy and self.enemy.current_health > 0 and self.player.current_health > 0:
+            return True
+        return False
