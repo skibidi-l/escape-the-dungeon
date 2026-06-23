@@ -161,11 +161,14 @@ class CombatState(GameState):
             result = self._use(consumable_item)
 
         response = result["game_response"]
-        if self.game_engine.is_in_combat():
+        #if self.game_engine.is_in_combat():
+        if self.game_engine.enemy and self.game_engine.enemy.is_alive() and self.game_engine.player.is_alive():
             monster_attack_result = self._monster_attack()
+            response += "\n\n curent health: " + str(self.game_engine.player.current_health) + "/" + str(self.game_engine.player.max_health)
             response += "\n\n" + monster_attack_result["game_response"]
         elif self.game_engine.player.is_alive():
             response += "\n\nYou have defeated the enemy!"
+            response += "\n\n" + self.game_engine.end_combat()
             next_state = ExplorationState(self.game_engine)
         else:
             response += "\n\nYou have been defeated by the enemy...GAME OVER!"
@@ -273,6 +276,21 @@ class GameEngine:
         self.state = NotStartedState(self)
         self.enemy = None
 
+        self.loot_list = [
+            game.Armor("White Leather Armor", "leather armor"), 
+            game.HealthPotion("Small Health Potion", 10),
+            game.Weapon("Sword", "1d6"), 
+            game.Weapon("Dagger", "1d4"), 
+            game.HealthPotion("Small Health Potion", 10),
+            game.Weapon("Staff", "1d4"), 
+            game.Weapon("Mace", "1d6"), 
+            game.Weapon("Axe", "1d6"),
+            game.HealthPotion("Small Health Potion", 10),
+            game.HealthPotion("Medium Health Potion", 20),
+            game.ThrowingKnife("Throwing Knife", "2d4"),
+        ]
+        
+
     def response_to_command(self,command: str) -> str:
         command = command.strip().lower()
         result = self.state.response_to_command(command)
@@ -359,12 +377,23 @@ class GameEngine:
         return f"You swing your weapon and deal {damage} damage to the {self.enemy.name}."
     
     def monster_attack(self) -> str:
-        if self.enemy.current_health <= 0:
+        if self.enemy.is_alive():
             damage = self.enemy.attack(self.player)
             return f"The {self.enemy.name} attacks you and deals {damage} damage."
         return ""
     
     def is_in_combat(self) -> bool:
-        if self.enemy and self.enemy.current_health > 0 and self.player.current_health > 0:
+        if self.enemy and self.enemy.is_alive() and self.player.is_alive():
             return True
         return False
+    
+    def end_combat(self):
+        looted_items = game.loot_roll(self.loot_list)
+        loot_gold = game.loot_roll(number_of_dice=5, sides_per_die=4)
+
+        response = f"The {self.enemy.name} dropped {looted_items} and {loot_gold} golds! CONGRATS!"
+        self.player.inventory.extend(looted_items)
+        self.player.gold += loot_gold
+        
+        self.enemy = None
+        return response
