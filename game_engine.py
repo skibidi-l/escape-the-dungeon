@@ -86,8 +86,13 @@ class ExplorationState(GameState):
             result = self._inventory()
         
         elif command.startswith("equip "):
-            equip_item = command.removeprefix("equip ").lower()
+            equip_item = command.removeprefix("equip ")
             result = self._equip(equip_item)
+
+        else:
+            return {
+                "game_response": "Invalid command. Please choose a valid action.\n\n" + self.get_available_actions()
+            }
 
         response = result["game_response"]
         if "next_state" in result:
@@ -157,11 +162,16 @@ class CombatState(GameState):
         elif command.startswith("use "):
             consumable_item = command.removeprefix("use ").lower()
             result = self._use(consumable_item)
+        elif command == "dodge":
+            result = self._dodge()
+        else:
+            return{
+                "game_response": "Invalid command. Please choose a valid action.\n\n" + self.get_available_actions()
+            }
 
         response = result["game_response"]
         if self.game_engine.is_in_combat():
             monster_attack_result = self._monster_attack()
-            response += "\n\n curent health: " + str(self.game_engine.player.current_health) + "/" + str(self.game_engine.player.max_health)
             response += "\n\n" + monster_attack_result["game_response"]
             if not self.game_engine.player.is_alive():
                 response += "\n\nYou have been defeated by the enemy...GAME OVER!"
@@ -198,6 +208,13 @@ class CombatState(GameState):
         return {
             "game_response": response,
         }
+    
+    def _dodge(self) -> dict:
+        response = self.game_engine.dodge()
+        return {
+            "game_response": response,
+        }
+    
     def _monster_attack(self) -> dict:
         response = self.game_engine.monster_attack()
         return {
@@ -290,6 +307,7 @@ class GameEngine:
             game.ThrowingKnife("Throwing Knife", "2d4"),
         ]
         
+        self.has_dodged = False
 
     def response_to_command(self,command: str) -> str:
         command = command.strip().lower()
@@ -376,10 +394,21 @@ class GameEngine:
             response += f"\n\nThe {self.enemy.name} has been mutilated to oblivion by your hand, YOU WIN!!!"
         return f"You swing your weapon and deal {damage} damage to the {self.enemy.name}."
     
+    def dodge(self) -> str:
+        is_dodged = self.player.dodge()
+        if is_dodged:
+            return f"You successfully dodged the {self.enemy.name}'s attack!"
+        else:
+            return f"You clumsily trip as you try to dodge, causing you to to take damage from the {self.enemy.name}'s attack."
+
     def monster_attack(self) -> str:
         if self.enemy.is_alive():
-            damage = self.enemy.attack(self.player)
-            return f"The {self.enemy.name} attacks you and deals {damage} damage."
+            if self.has_dodged:
+                self.has_dodged = False
+                return ""
+            else:
+                damage = self.enemy.attack(self.player)
+                return f"The {self.enemy.name} attacks you and deals {damage} damage."
         return ""
     
     def is_in_combat(self) -> bool:
@@ -393,7 +422,7 @@ class GameEngine:
         
     def end_combat(self):
         looted_items = game.loot_roll(self.loot_list)
-        loot_gold = game.loot_roll(number_of_dice=5, sides_per_die=4)
+        loot_gold = game.roll_dice(number_of_dice=5, sides_per_die=4)
 
         response = f"The {self.enemy.name} dropped {looted_items} and {loot_gold} golds! CONGRATS!"
         self.player.inventory.extend(looted_items)
