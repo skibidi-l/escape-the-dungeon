@@ -164,6 +164,12 @@ class CombatState(GameState):
             result = self._use(consumable_item)
         elif command == "dodge":
             result = self._dodge()
+        elif command.startswith("cast-spell"):
+            spell_name = command.removeprefix("cast-spell ").strip()
+            result = self._cast_spell(spell_name)
+        elif command.startswith("use-skill"):
+            skill_name = command.removeprefix("use-skill ").strip()
+            result = self._use_skill(skill_name)
         else:
             return{
                 "game_response": "Invalid command. Please choose a valid action.\n\n" + self.get_available_actions()
@@ -201,25 +207,33 @@ class CombatState(GameState):
     def _attack(self) -> dict:
         response = self.game_engine.attack()
         return {
-            "game_response": response,
+            "game_response": response
         }
-    def _use(self, consumable_item: str) -> dict:
-        response = self.game_engine.use(consumable_item)
+    
+    def _cast_spell(self, spell_name: str) -> dict:
+        response = self.game_engine.player.cast_spell(spell_name)
         return {
-            "game_response": response,
+            "game_response": response
+        }
+        
+    def _use_skill(self, skill_name: str) -> dict:
+        response = self.game_engine.player.use_skill(skill_name)
+        return {
+            "game_response": response
         }
     
     def _dodge(self) -> dict:
         response = self.game_engine.dodge()
         return {
-            "game_response": response,
+            "game_response": response
         }
     
     def _monster_attack(self) -> dict:
         response = self.game_engine.monster_attack()
         return {
-            "game_response": response,
+            "game_response": response
         }
+    
 
 class GameOverState(GameState):
     def __init__(self, game_engine: 'GameEngine'):
@@ -395,8 +409,8 @@ class GameEngine:
         return f"You swing your weapon and deal {damage} damage to the {self.enemy.name}."
     
     def dodge(self) -> str:
-        is_dodged = self.player.dodge()
-        if is_dodged:
+        self.has_dodged = self.player.dodge()
+        if self.has_dodged:
             return f"You successfully dodged the {self.enemy.name}'s attack!"
         else:
             return f"You clumsily trip as you try to dodge, causing you to to take damage from the {self.enemy.name}'s attack."
@@ -430,3 +444,18 @@ class GameEngine:
         
         self.enemy = None
         return response
+    
+    def cast_spell(self, spell_name: str) -> str:
+        if self.player.has_learned_spell():
+            spell_name = input("Enter the name of the spell you want to cast: ").strip()
+            return self.player.cast_spell(spell_name, self.enemy)
+        else:
+            return "You haven't learned any spells yet."
+        
+    def use_skill(self, skill_name: str) -> str:
+        if self.player.has_learned_skill():
+            skill_name = input("Enter the name of the skill you want to use: ").strip()
+            return self.player.use_skill(skill_name, self.enemy)
+        else:
+            return "You haven't learned any skills yet."
+  

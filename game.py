@@ -197,6 +197,12 @@ class PlayerCharacter(Character):
                 spell.cast(enemy)
                 break
 
+    def has_learned_spell(self):
+        return any(spell is not None for spell in self.spells)
+    
+    def has_learned_skill(self):
+        return any(skill is not None for skill in self.skills)
+
     def learn_skill(self, skill):
         for i in range(len(self.skills)):
             if self.skills[i] is None:
@@ -280,7 +286,8 @@ class Spell:
       number_of_dice = int(self.damage_dice.split('d')[0])
       damage = roll_dice(sides_per_die, number_of_dice)
       enemy.current_health -= damage
-      print(f"You cast {self.name}, dealing {damage} damage to the {enemy.name}!")
+      return f"You cast {self.name}, dealing {damage} damage to the {enemy.name}!"
+    
 class Skill:
     def __init__(self, name, damage_dice, stamina_cost):
         self.name = name
@@ -292,6 +299,7 @@ class Skill:
         number_of_dice = int(self.damage_dice.split('d')[0])
         damage = roll_dice(sides_per_die, number_of_dice)
         enemy.current_health -= damage
+        return f"You use {self.name}, dealing {damage} damage to the {enemy.name}!"
 
         print(f"You use {self.name}, dealing {damage} damage to the {enemy.name}!")
 def roll_dice( sides_per_die, number_of_dice=1):
