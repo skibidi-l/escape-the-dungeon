@@ -151,7 +151,7 @@ class ExplorationState(GameState):
 class CombatState(GameState):
     def __init__(self, game_engine: 'GameEngine'):
         super().__init__(game_engine)
-        self.available_actions = ["attack", "use [item]", "dodge", "spell", "skill"]
+        self.available_actions = ["attack", "use [item]", "dodge", "cast-spell [Spell]", "use-skill [skill]"]
 
     def response_to_command(self, command: str) -> dict:
         next_state = self
@@ -196,12 +196,12 @@ class CombatState(GameState):
         response += "\n\n" + next_state.get_available_actions()
         response += "\n\nwhat do you want to do?"
         character_update = self.game_engine.player.get_status()
-        room_status = self.game_engine.get_room_status()
+        room_status = self.game_engine.get_combat_status()
         return {
             "game_response": response,
             "next_state": next_state,
             "character_update": character_update,
-            "room_status": room_status
+            "status_update": room_status
         }
 
     def _attack(self) -> dict:
@@ -217,7 +217,7 @@ class CombatState(GameState):
         }
         
     def _use_skill(self, skill_name: str) -> dict:
-        response = self.game_engine.player.use_skill(skill_name)
+        response = self.game_engine.use_skill(skill_name)
         return {
             "game_response": response
         }
@@ -324,7 +324,7 @@ class GameEngine:
         self.has_dodged = False
 
     def response_to_command(self,command: str) -> str:
-        command = command.strip().lower()
+        command = command.strip()
         result = self.state.response_to_command(command)
         if "next_state" in result:
             self.state = result["next_state"]
@@ -335,9 +335,13 @@ class GameEngine:
         self.player.equip_armor(game.Armor("chainmail", "chainmail"))
         self.player.equip_weapon(game.Weapon("longsword", "1d8"))
 
-        power_strike_skill =game.Skill("Power Stirke", "2d6", 150)
+        power_strike_skill =game.Skill("Power Strike", "2d6", 150)
         self.player.learn_skill(power_strike_skill)
 
+    def get_combat_status(self) -> str:
+        combat_status = f"You are in combat with a {self.enemy.name} in the {self.current_room}.\n\nHealth: {self.enemy.current_health}/{self.enemy.max_health}"
+        return combat_status
+    
     def get_room_status(self) -> str:
         room_status = f"You are in the {self.current_room}. {self.rooms[self.current_room]['description']}"
         if "item" in self.rooms[self.current_room]:
@@ -447,14 +451,12 @@ class GameEngine:
     
     def cast_spell(self, spell_name: str) -> str:
         if self.player.has_learned_spell():
-            spell_name = input("Enter the name of the spell you want to cast: ").strip()
             return self.player.cast_spell(spell_name, self.enemy)
         else:
             return "You haven't learned any spells yet."
         
     def use_skill(self, skill_name: str) -> str:
         if self.player.has_learned_skill():
-            skill_name = input("Enter the name of the skill you want to use: ").strip()
             return self.player.use_skill(skill_name, self.enemy)
         else:
             return "You haven't learned any skills yet."

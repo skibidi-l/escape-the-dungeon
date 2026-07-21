@@ -194,13 +194,13 @@ class PlayerCharacter(Character):
     def cast_spell(self, spell_name, enemy):
         for spell in self.spells:
             if spell_name == spell.name:
-                spell.cast(enemy)
-                break
+                return spell.cast(enemy)
+            return f"You have not learned the spell: {spell_name}. "
 
-    def has_learned_spell(self):
+    def has_learned_spell(self) -> bool:
         return any(spell is not None for spell in self.spells)
     
-    def has_learned_skill(self):
+    def has_learned_skill(self) -> bool:
         return any(skill is not None for skill in self.skills)
 
     def learn_skill(self, skill):
@@ -213,11 +213,11 @@ class PlayerCharacter(Character):
                 return
         print("you cannot learn more skills, your skill slots are full.")
 
-    def use_skill(self, skill_name, enemy):
+    def use_skill(self, skill_name, enemy) -> str:
         for skill in self.skills:
             if skill is not None and skill_name == skill.name:
-                skill.use(enemy)
-                break
+                return skill.use(enemy)
+            return f"You have not learned the skill: {skill_name}. "
 
     def get_status(self):
         stats = f"**{self.name}** - {self.character_class}\n\n"
