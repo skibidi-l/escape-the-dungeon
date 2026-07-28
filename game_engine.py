@@ -196,7 +196,10 @@ class CombatState(GameState):
         response += "\n\n" + next_state.get_available_actions()
         response += "\n\nwhat do you want to do?"
         character_update = self.game_engine.player.get_status()
-        room_status = self.game_engine.get_combat_status()
+        if isinstance(next_state, CombatState):
+            room_status = self.game_engine.get_combat_status()
+        else:
+            room_status = self.game_engine.get_room_status()
         return {
             "game_response": response,
             "next_state": next_state,
@@ -260,6 +263,33 @@ class GameEngine:
     COMPLETED = "completed"
     GAME_OVER = "game_over"
 
+    def initialize(self):
+        self.current_room = "Cell"
+        self.rooms = {
+                    'Cell': {
+                        'description': 'A cold, dark cell. The door is locked.',
+                        'east': "Hallway (locked)",
+                        'item': "key",
+                        },
+                    "Hallway": {
+                        'description': "A dim hallway that leads to a heavy iron gate that acts as a roadblock to the northword path.",
+                        'west': 'cell',
+                        'encounter' : True,
+                        'north': 'Armory',
+                    },
+                    "Armory": {
+                        'description': "A room filled with rusty weapons were a glowing staff beckons you to grab it.",
+                        'south': 'Hallway',
+                        'item': "magic staff",
+                        'encounter' : True,
+                        'east': "Exit",
+                    },
+                    "Exit": {
+                        'description': "A ancient door that is riddled with arcane symbols, it seems to be locked with a magical seal.",
+                        'west': "Armory",
+                    }
+                }
+        
 
     def __init__(self):
         self.player = None
@@ -397,7 +427,7 @@ class GameEngine:
         
     def equip(self, equip_item) -> str:
         if self.player.is_in_inventory(equip_item):
-            is_equip_successful = self.player.equip_item(equip_item)
+            is_equip_successful = self.player.equip(equip_item)
             if is_equip_successful:
                 return f"You have equipped the {equip_item}."
             else:

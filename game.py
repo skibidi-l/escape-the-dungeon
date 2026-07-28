@@ -21,6 +21,11 @@ class Item:
 class QuestItem(Item):
     def __init__(self, name):
         super().__init__(name)
+        self.is_used = False
+
+    def use(self, character):
+        if not self.is_used:
+            self.is_used = True
 
 class Consumable(Item):
     def __init__(self, name, effect, amount):
@@ -60,13 +65,15 @@ class ThrowingKnife(Consumable):
 class Weapon(Item):
     def __init__(self, name, damage_dice):  
         super().__init__(name)
-        self.damage = damage_dice
+        self.damage_dice = damage_dice
+
     def get_damage(self):   
         result = self.damage_dice.split('d')
         num_dice = int(result[0])
         sides = int(result[1])
         return roll_dice(sides_per_die=sides, number_of_dice=num_dice)
 
+    
 class Armor(Item):
     def __init__(self, name, type):
         super().__init__(name)
@@ -110,10 +117,17 @@ class Character:
         return 0
     
     def attack(self, target):
-        damage = self.attributes.strength + roll_dice(sides_per_die=6)
+        damage = self.attributes.strength + self.equipments.weapon.get_damage()
         damage = damage - target.get_armor_value()
-        target.current_health = target.current_health - damage
+        target.take_damage(damage)
         return damage
+
+    def take_damage(self, damage):
+        self.current_health -= damage
+        if self.current_health < 0:
+            self.current_health = 0
+
+
     def dodge(self):
         dodge_chance = self.attributes.agility * 5
         if roll_dice(sides_per_die=100) <= dodge_chance:
@@ -240,17 +254,16 @@ class PlayerCharacter(Character):
 
     def is_in_inventory(self, item_name):
         for item in self.inventory:
-            if item.name.lower() == item_name:
+            if item.name.lower() == item_name.lower():
                 return True
         return False
 
     def use_item(self, item_name):
         for index, item in enumerate (self.inventory):
             if item.name.lower() == item_name.lower():
-                if isinstance(item, Consumable):
-                    print(f"Using item: {item.name}")
+                if isinstance(item, Consumable) or isinstance(item, QuestItem):
                     item.use(self)
-                del self.inventory[index]
+                    del self.inventory[index]
                 break
     def unequip_weapon(self):
         if self.equipments.weapon != None:
