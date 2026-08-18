@@ -34,8 +34,8 @@ class NotStartedState(GameState):
             next_state = CharacterCreationState(self.game_engine)
             self.game_engine.create_player()
 
-            next_state = ExplorationState(self.game_engine)
-            room_status = self.game_engine.get_room_status()
+            #next_state = ExplorationState(self.game_engine)
+            #room_status = self.game_engine.get_room_status()
             response += "\n\n" + next_state.get_available_actions()
             response += "\n\nwhat do you want to do?"
 
@@ -43,7 +43,7 @@ class NotStartedState(GameState):
 
             return {
                 "game_response": response,
-                "status_update": room_status,
+                #"status_update": room_status,
                 "character_update": character_update,
                 "next_state": next_state
                     }

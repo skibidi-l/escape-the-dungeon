@@ -5,9 +5,10 @@ import game
 import random
 import game_engine
 
+
 from textual.app  import App, ComposeResult, on
 from textual.containers import HorizontalGroup, VerticalGroup, VerticalScroll, Grid
-from textual.widgets import Header, Footer, Input, Markdown, Label, Button
+from textual.widgets import Header, Footer, Input, Markdown, Label, Button, ListView, ListItem
 from textual.screen import ModalScreen
 
 class QuitScreen(ModalScreen[bool]):
@@ -27,8 +28,47 @@ class QuitScreen(ModalScreen[bool]):
     def on_button_pressed(self, event: Button.Pressed) -> None:
         if event.button.id == "quit":
             self.dismiss(True)
-        elif event.button.id == "cancel":
+        else:
             self.dismiss(False)
+
+class CharacterCreationScreen(ModalScreen[bool]):
+    DEFAULT_CSS = """
+    Grid {
+        align: center middle;
+    }
+
+    ListView {
+        width: 30%;
+        height: auto;
+        margin: 2 2;
+    }
+
+    Label {
+        padding: 1 2;
+    }
+
+    Button {
+        margin: 1;
+    }
+    """
+    def compose(self) -> ComposeResult:
+        yield Grid(
+            VerticalGroup(
+            Label("Choose your class:", id="question"),
+            ListView(
+                ListItem(Label("Warrior (High Strength)")),
+                ListItem(Label("Rogue (High Agility)")),
+                ListItem(Label("Mage (High Magic)")),
+            ),
+            Button("OK", variant="primary", id="ok"),
+            id="dialog",
+        )
+
+
+
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        if event.button.id == "ok":
+            self.dismiss(True)
 
 class TextAdventureApp(App):
 
@@ -83,7 +123,8 @@ class TextAdventureApp(App):
             character_sheet_window = self.query_one("#character-sheet")
             character_sheet_window.update(response["character_update"])
 
-
+        if "next_state" in response and isinstance(response["next_state"], game_engine.CharacterCreationState):
+            self.push_screen(CharacterCreationScreen())
     def update_history(self, command_text: str, response: str) -> None:
         history_scroll = self.query_one("#history-scroll")
         history_scroll.mount(Response(command_text + response))
