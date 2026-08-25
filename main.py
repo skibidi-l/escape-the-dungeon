@@ -54,21 +54,30 @@ class CharacterCreationScreen(ModalScreen[bool]):
     def compose(self) -> ComposeResult:
         yield Grid(
             VerticalGroup(
-            Label("Choose your class:", id="question"),
-            ListView(
-                ListItem(Label("Warrior (High Strength)")),
-                ListItem(Label("Rogue (High Agility)")),
-                ListItem(Label("Mage (High Magic)")),
-            ),
+                Label("What would be your name, brave adventurer?", id="name-question"),
+                Input(placeholder="Enter your name here...", id="name-input"),
+                Label("Choose your class:", id="class-question"),
+                ListView(
+                    ListItem(Label("Warrior (High Strength)"),name="Warrior"),
+                    ListItem(Label("Rogue (High Agility)"), name="Rogue"),
+                    ListItem(Label("Mage (High Magic)"), name="Mage"),
+                    id="selected-class",
+                ),
             Button("OK", variant="primary", id="ok"),
+            ),
             id="dialog",
         )
+    
 
 
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         if event.button.id == "ok":
-            self.dismiss(True)
+            self.dismiss({
+                "name": self.query_one("#name-input").value,
+                "class": self.query_one("#selected-class").highlighted_child.name,
+            })
+
 
 class TextAdventureApp(App):
 

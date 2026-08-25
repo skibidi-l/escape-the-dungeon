@@ -32,19 +32,19 @@ class NotStartedState(GameState):
         if command == "start":
             response = "Welcome to Escape the Dungeon! Your adventure begins now."
             next_state = CharacterCreationState(self.game_engine)
-            self.game_engine.create_player()
+            #self.game_engine.create_player()
 
             #next_state = ExplorationState(self.game_engine)
             #room_status = self.game_engine.get_room_status()
             response += "\n\n" + next_state.get_available_actions()
             response += "\n\nwhat do you want to do?"
 
-            character_update = self.game_engine.player.get_status()
+            #character_update = self.game_engine.player.get_status()
 
             return {
                 "game_response": response,
                 #"status_update": room_status,
-                "character_update": character_update,
+                #"character_update": character_update,
                 "next_state": next_state
                     }
         else:
@@ -336,8 +336,8 @@ class GameEngine:
             self.state = result["next_state"]
         return result
 
-    def create_player(self) -> game.PlayerCharacter:
-        self.player = game.PlayerCharacter("Adventurer", "Warrior", game.Attributes(8, 4, 2))
+    def create_player(self, name: str, character_class: str):
+        self.player = game.PlayerCharacter(name, character_class, game.Attributes(8, 4, 2))
         self.player.equip_armor(game.Armor("chainmail", "chainmail"))
         self.player.equip_weapon(game.Weapon("longsword", "1d8"))
 
