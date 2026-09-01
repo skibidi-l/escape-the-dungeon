@@ -93,7 +93,24 @@ class TextAdventureApp(App):
         )
             
         yield Footer()
+    def handle_character_creation(self, result: dict | None) -> None:
+        if result:
+            name = result["name"]
+            player_class = result["class"]
+            self.game_engine.create_player(name, player_class)
 
+            response = self.game_engine.response_to_command("")
+            self.update_history(f"> **Character Created**\n\n", response["game_response"])
+            if "status_update" in response:
+                status_window = self.query_one("#status")
+                status_window.update(response["status_update"])
+
+            if "character_update" in response:
+                character_sheet_window = self.query_one("#character-sheet")
+                character_sheet_window.update(response["character_update"])
+        else:
+            self.update_history(f"> **Character Creation Cancelled**\n\n", "")
+            
     def on_mount(self) -> None:
         self.query_one("#command-input").focus()
 
@@ -133,7 +150,8 @@ class TextAdventureApp(App):
             character_sheet_window.update(response["character_update"])
 
         if "next_state" in response and isinstance(response["next_state"], game_engine.CharacterCreationState):
-            self.push_screen(CharacterCreationScreen())
+            self.push_screen(CharacterCreationScreen(), self.handle_character_creation)
+
     def update_history(self, command_text: str, response: str) -> None:
         history_scroll = self.query_one("#history-scroll")
         history_scroll.mount(Response(command_text + response))

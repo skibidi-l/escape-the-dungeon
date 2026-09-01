@@ -1,3 +1,5 @@
+from urllib import response
+
 import game
 import random
 
@@ -55,11 +57,21 @@ class CharacterCreationState(GameState):
         super().__init__(game_engine)
         self.available_actions = []
 
-    def get_available_actions(self) -> str:
-        return f"Available actions: {', '.join(self.available_actions)}"
     
     def response_to_command(self, command: str) -> dict:
-        pass
+
+        response = "Character creation is complete. Your adventure begins now..."
+        next_state = ExplorationState(self.game_engine)
+        response += "\n\n" + next_state.get_available_actions()
+        character_update = self.game_engine.player.get_status()
+        room_status = self.game_engine.get_room_status()
+
+        return {
+                "game_response": response,
+                "next_state": next_state,
+                "character_update": character_update,
+                "status_update": room_status
+            }
 
 class ExplorationState(GameState):
     def __init__(self, game_engine: 'GameEngine'):
@@ -337,12 +349,30 @@ class GameEngine:
         return result
 
     def create_player(self, name: str, character_class: str):
-        self.player = game.PlayerCharacter(name, character_class, game.Attributes(8, 4, 2))
-        self.player.equip_armor(game.Armor("chainmail", "chainmail"))
-        self.player.equip_weapon(game.Weapon("longsword", "1d8"))
+        if character_class == "Warrior":
+            self.player = game.PlayerCharacter(name, character_class, game.Attributes(8, 4, 2))
+            self.player.equip_armor(game.Armor("chainmail", "chainmail"))
+            self.player.equip_weapon(game.Weapon("longsword", "1d8"))
 
-        power_strike_skill =game.Skill("Power Strike", "2d6", 150)
-        self.player.learn_skill(power_strike_skill)
+            power_strike_skill = game.Skill("Power Strike", "2d6", 150)
+            self.player.learn_skill(power_strike_skill)
+
+        elif character_class == "Rogue":
+            self.player = game.PlayerCharacter(name, character_class, game.Attributes(6, 6, 1))
+            self.player.equip_armor(game.Armor("leather armor", "leather armor"))
+            self.player.equip_weapon(game.Weapon("dagger", "1d4"))
+
+            backstab_skill = game.Skill("Backstab", "3d6", 200)
+            self.player.learn_skill(backstab_skill)
+
+        elif character_class == "Mage":
+            self.player = game.PlayerCharacter(name, character_class, game.Attributes(4, 4, 6))
+            self.player.equip_armor(game.Armor("robe", "robe"))
+            self.player.equip_weapon(game.Weapon("staff", "1d4"))
+
+            fireball_spell = game.Spell("Fireball", "3d6", 100)
+            self.player.learn_spell(fireball_spell)
+
 
     def get_combat_status(self) -> str:
         combat_status = f"You are in combat with a {self.enemy.name} in the {self.current_room}.\n\nHealth: {self.enemy.current_health}/{self.enemy.max_health}"
