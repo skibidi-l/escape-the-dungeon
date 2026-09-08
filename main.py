@@ -33,12 +33,27 @@ class QuitScreen(ModalScreen[bool]):
 
 class CharacterCreationScreen(ModalScreen[bool]):
     DEFAULT_CSS = """
-    Grid {
+    CharacterCreationScreen {
         align: center middle;
     }
 
+    #dialog {
+        width: 60;
+        height: auto;
+        border: thick $background 80%;
+        background: $surface;
+    }
+
+    VerticalGroup {
+        align: center middle;
+        }
+
+    #name-input {
+        width: 30;
+        }
+
     ListView {
-        width: 30%;
+        width: 30;
         height: auto;
         margin: 2 2;
     }
@@ -49,6 +64,7 @@ class CharacterCreationScreen(ModalScreen[bool]):
 
     Button {
         margin: 1;
+        align: center middle;
     }
     """
     def compose(self) -> ComposeResult:
@@ -114,11 +130,11 @@ class TextAdventureApp(App):
     def on_mount(self) -> None:
         self.query_one("#command-input").focus()
 
-        def check_quit(result: bool| None) -> None:
-            if result:
-                self.exit()
+        #def check_quit(result: bool| None) -> None:
+            #if result:
+                #self.exit()
 
-        self.push_screen(QuitScreen(), check_quit)
+        #self.push_screen(QuitScreen(), check_quit)
 
 
     @on(Input.Submitted, "#command-input")

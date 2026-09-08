@@ -34,19 +34,11 @@ class NotStartedState(GameState):
         if command == "start":
             response = "Welcome to Escape the Dungeon! Your adventure begins now."
             next_state = CharacterCreationState(self.game_engine)
-            #self.game_engine.create_player()
-
-            #next_state = ExplorationState(self.game_engine)
-            #room_status = self.game_engine.get_room_status()
-            response += "\n\n" + next_state.get_available_actions()
-            response += "\n\nwhat do you want to do?"
-
-            #character_update = self.game_engine.player.get_status()
 
             return {
                 "game_response": response,
-                #"status_update": room_status,
-                #"character_update": character_update,
+
+
                 "next_state": next_state
                     }
         else:
@@ -227,7 +219,7 @@ class CombatState(GameState):
         }
     
     def _cast_spell(self, spell_name: str) -> dict:
-        response = self.game_engine.player.cast_spell(spell_name)
+        response = self.game_engine.cast_spell(spell_name)
         return {
             "game_response": response
         }
@@ -354,7 +346,7 @@ class GameEngine:
             self.player.equip_armor(game.Armor("chainmail", "chainmail"))
             self.player.equip_weapon(game.Weapon("longsword", "1d8"))
 
-            power_strike_skill = game.Skill("Power Strike", "2d6", 150)
+            power_strike_skill = game.Skill("Power Strike", "7d12", 150)
             self.player.learn_skill(power_strike_skill)
 
         elif character_class == "Rogue":
@@ -362,15 +354,15 @@ class GameEngine:
             self.player.equip_armor(game.Armor("leather armor", "leather armor"))
             self.player.equip_weapon(game.Weapon("dagger", "1d4"))
 
-            backstab_skill = game.Skill("Backstab", "3d6", 200)
+            backstab_skill = game.Skill("Backstab", "5d25", 200)
             self.player.learn_skill(backstab_skill)
 
         elif character_class == "Mage":
             self.player = game.PlayerCharacter(name, character_class, game.Attributes(4, 4, 6))
-            self.player.equip_armor(game.Armor("robe", "robe"))
+            self.player.equip_armor(game.Armor("cloth armor", "cloth armor"))
             self.player.equip_weapon(game.Weapon("staff", "1d4"))
 
-            fireball_spell = game.Spell("Fireball", "3d6", 100)
+            fireball_spell = game.Spell("Fireball", "11d15", 100)
             self.player.learn_spell(fireball_spell)
 
 

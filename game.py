@@ -80,7 +80,7 @@ class Armor(Item):
         self.type = type
         
     def get_defense(self):
-        return armor_value[self.name]
+        return armor_value[self.type]
     
 class Equipment:
     def __init__(self, weapon, armor):
@@ -177,7 +177,7 @@ class PlayerCharacter(Character):
 
     def equip(self, item_name):
         for index, item in enumerate(self.inventory):
-            if item.name.lower() == item_name:
+            if item.name.lower() == item_name.lower():
                 if isinstance(item, Weapon):
                     self.unequip_weapon()
                     del self.inventory[index]
