@@ -1,5 +1,5 @@
 from urllib import response
-
+from enum import Enum
 import game
 import random
 
@@ -260,16 +260,49 @@ class GameOverState(GameState):
             return {
                 "game_response": "Invalid response, Please type 'restart' to start a new game!"
             }
+
+class Room:
+    
+    def __init__(self, description: str, items: list = None, encounter: bool = False):
+        self.description = description
+        self.items = items if items is not None else []
+        self.encounter = encounter
+        self.connections = {}
+
+    def connect(self, direction: str, room: 'Room'):
+        self.connections[direction] = room
+
+    def trigger_entry_event(self, player):
+        if self.entry_event:
+            self.entry_event(player)
+
+class Direction(Enum):
+    NORTH = "north"
+    SOUTH = "south"
+    EAST = "east"
+    WEST = "west"
+
 class GameEngine:
-    NOT_STARTED = "not_started"
-    CHAR_CREATION = "character_creation"
-    EXPLORATION = "exploration"
-    COMBAT = "combat"
-    COMPLETED = "completed"
-    GAME_OVER = "game_over"
+    def connect_rooms(self, to_room: 'Room', direction: str, from_room: 'Room'):
+        from_room.connect(direction, self)
+        reverse_direction = {
+            Direction.NORTH: Direction.SOUTH,
+            Direction.SOUTH: Direction.NORTH,
+            Direction.EAST: Direction.WEST,
+            Direction.WEST: Direction.EAST
+        }
+        
+        if direction in reverse_direction:
+            to_room.connect(reverse_direction[direction], from_room)
 
     def init_map(self):
         self.current_room = "Cell"
+        prison_cell = Room(description="A cold, dark cell. The door is locked.", items='key')
+        hallway = Room(description="A dim hallway that leads to a heavy iron gate that acts as a roadblock to the northword path.", encounter=True)
+        armory = Room(description="A room filled with rusty weapons were a glowing staff beckons you to grab it.", items='magic staff', encounter=True)
+        dungeon_exit = Room(description="A ancient door that is riddled with arcane symbols, it seems to be locked with a magical seal.")
+
+        self.connect
         self.rooms = {
                     'Cell': {
                         'description': 'A cold, dark cell. The door is locked.',
@@ -342,15 +375,15 @@ class GameEngine:
 
     def create_player(self, name: str, character_class: str):
         if character_class == "Warrior":
-            self.player = game.PlayerCharacter(name, character_class, game.Attributes(8, 4, 2))
+            self.player = game.PlayerCharacter(name, character_class, game.Attributes(16, 4, 2))
             self.player.equip_armor(game.Armor("chainmail", "chainmail"))
             self.player.equip_weapon(game.Weapon("longsword", "1d8"))
 
-            power_strike_skill = game.Skill("Power Strike", "7d12", 150)
+            power_strike_skill = game.Skill("Power Strike", "9d15", 150)
             self.player.learn_skill(power_strike_skill)
 
         elif character_class == "Rogue":
-            self.player = game.PlayerCharacter(name, character_class, game.Attributes(6, 6, 1))
+            self.player = game.PlayerCharacter(name, character_class, game.Attributes(10, 12, 1))
             self.player.equip_armor(game.Armor("leather armor", "leather armor"))
             self.player.equip_weapon(game.Weapon("dagger", "1d4"))
 
@@ -358,11 +391,11 @@ class GameEngine:
             self.player.learn_skill(backstab_skill)
 
         elif character_class == "Mage":
-            self.player = game.PlayerCharacter(name, character_class, game.Attributes(4, 4, 6))
+            self.player = game.PlayerCharacter(name, character_class, game.Attributes(4, 4, 13))
             self.player.equip_armor(game.Armor("cloth armor", "cloth armor"))
             self.player.equip_weapon(game.Weapon("staff", "1d4"))
 
-            fireball_spell = game.Spell("Fireball", "11d15", 100)
+            fireball_spell = game.Spell("Fireball", "11d18", 100)
             self.player.learn_spell(fireball_spell)
 
 
