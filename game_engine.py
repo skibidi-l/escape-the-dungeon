@@ -1,3 +1,4 @@
+from unicodedata import name
 from urllib import response
 from enum import Enum
 import game
@@ -263,14 +264,15 @@ class GameOverState(GameState):
 
 class Room:
     
-    def __init__(self, description: str, items: list = None, encounter: bool = False):
+    def __init__(self, description: str, item: str = None, encounter: bool = False, locked: bool = False):
         self.description = description
-        self.items = items if items is not None else []
+        self.item = item
         self.encounter = encounter
         self.connections = {}
+        self.locked = locked
 
     def connect(self, direction: str, room: 'Room'):
-        self.connections[direction] = room
+        self.connections[direction] = {"room":room, "locked": room.locked}
 
     def trigger_entry_event(self, player):
         if self.entry_event:
@@ -282,9 +284,21 @@ class Direction(Enum):
     EAST = "east"
     WEST = "west"
 
+class Map:
+    
+    def __init__(self):
+        self.rooms = {}
+        self.current_room = None
+
+    def add_room(self, name: str, room: Room):
+        self.rooms[name] = room
+
+    def get_room(self, name: str) -> Room:
+        return self.rooms.get(name)
+
 class GameEngine:
     def connect_rooms(self, to_room: 'Room', direction: str, from_room: 'Room'):
-        from_room.connect(direction, self)
+        from_room.connect(direction, to_room)
         reverse_direction = {
             Direction.NORTH: Direction.SOUTH,
             Direction.SOUTH: Direction.NORTH,
@@ -297,12 +311,22 @@ class GameEngine:
 
     def init_map(self):
         self.current_room = "Cell"
-        prison_cell = Room(description="A cold, dark cell. The door is locked.", items='key')
+        prison_cell = Room(description="A cold, dark cell. The door is locked.", item='key', locked=True)
         hallway = Room(description="A dim hallway that leads to a heavy iron gate that acts as a roadblock to the northword path.", encounter=True)
         armory = Room(description="A room filled with rusty weapons were a glowing staff beckons you to grab it.", items='magic staff', encounter=True)
         dungeon_exit = Room(description="A ancient door that is riddled with arcane symbols, it seems to be locked with a magical seal.")
 
-        self.connect
+
+        self.connect_rooms(prison_cell, Direction.EAST, hallway)
+        self.connect_rooms(hallway, Direction.NORTH, armory)
+        self.connect_rooms(armory, Direction.EAST, dungeon_exit)
+
+        self.map = Map()
+        self.map.add_room("Cell", prison_cell)
+        self.map.add_room("Hallway", hallway)
+        self.map.add_room("Armory", armory)
+        self.map.add_room("Exit", dungeon_exit)
+        self.map.current_room = self.map.get_room("Cell")
         self.rooms = {
                     'Cell': {
                         'description': 'A cold, dark cell. The door is locked.',
@@ -404,18 +428,18 @@ class GameEngine:
         return combat_status
     
     def get_room_status(self) -> str:
-        room_status = f"You are in the {self.current_room}. {self.rooms[self.current_room]['description']}"
-        if "item" in self.rooms[self.current_room]:
-            room_status += f" You see a {self.rooms[self.current_room]['item']} here."
+        room_status = f"You are in the {self.map.current_room.name}. {self.map.current_room.description}"
+        if "item" in self.map.current_room:
+            room_status += f" You see a {self.map.current_room.item} here."
         return room_status
     
     def go_to(self, direction: str) -> str:
-        if direction in self.rooms[self.current_room]:
-            if self.rooms[self.current_room][direction].lower().endswith('(locked)'):
+        if direction in self.map.current_room.connections:
+            if self.map.current_room.locked:
                 response = "The door is locked. You need to find a key to open it."
             else:
-                self.current_room = self.rooms[self.current_room][direction]
-                response = f"You move {direction} to the {self.current_room}."
+                self.map.current_room = self.map.get_room(self.map.current_room.connections[direction])
+                response = f"You move {direction} to the {self.map.current_room.name}."
                 if self.is_encounter():
                     self.enemy = random.choice(self.monsters)
                     self.player.start_combat()
@@ -427,11 +451,11 @@ class GameEngine:
             return "You can't go that way!"
         
     def is_encounter(self) -> bool:
-        return "encounter" in self.rooms[self.current_room] and self.rooms[self.current_room]['encounter'] == True
+        return self.map.current_room.encounter
 
     def take(self, item: str) -> str:
-        if "item" in self.rooms[self.current_room] and self.rooms[self.current_room]["item"]:
-            self.player.inventory.append(game.QuestItem(self.rooms[self.current_room].pop("item")))
+        if self.map.current_room.item == item:
+            self.player.inventory.append(game.QuestItem(self.map.current_room.pop("item")))
             return f"you have taken the {item}."
         else:
             return "invalid item, please try again."
@@ -440,9 +464,13 @@ class GameEngine:
         if self.player.is_in_inventory(item):
             if item.lower() == "key" and self.current_room == "Cell":
                 self.player.use_item('key')
-                self.rooms["Cell"]["east"] = "Hallway"
-                self.rooms['Cell']['description'] = "A cold, dark cell. The door is now unlocked."
+                self.map.current_room.connections["east"]["locked"] = False
+                self.map.current_room.description = self.map.current_room.description.replace("The door is locked.", "The door is unlocked.")
                 return "You use the key to unlock the cell door."
+
+                #self.rooms["Cell"]["east"] = "Hallway"
+                #self.rooms['Cell']['description'] = self.rooms['Cell']['description'].replace("The door is locked.", "The door is unlocked.")
+                #return "You use the key to unlock the cell door."
             else:
                 self.player.use_item(item)
                 return f"You use the {item}."
