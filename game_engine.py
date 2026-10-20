@@ -264,15 +264,16 @@ class GameOverState(GameState):
 
 class Room:
     
-    def __init__(self, description: str, item: str = None, encounter: bool = False, locked: bool = False):
+    def __init__(self, name: str, description: str, item: str = None, encounter: bool = False, locked: bool = False):
+        self.name = name
         self.description = description
         self.item = item
         self.encounter = encounter
         self.connections = {}
         self.locked = locked
 
-    def connect(self, direction: str, room: 'Room'):
-        self.connections[direction] = {"room":room, "locked": room.locked}
+    def connect(self, direction: str, room: Room, locked: bool = False):
+        self.connections[direction] = {"room":room, "locked": locked}
 
     def trigger_entry_event(self, player):
         if self.entry_event:
@@ -297,8 +298,8 @@ class Map:
         return self.rooms.get(name)
 
 class GameEngine:
-    def connect_rooms(self, to_room: 'Room', direction: str, from_room: 'Room'):
-        from_room.connect(direction, to_room)
+    def connect_rooms(self, from_room: 'Room', direction: str, to_room: Room, locked: bool = False):
+        from_room.connect(direction, to_room, locked)
         reverse_direction = {
             Direction.NORTH: Direction.SOUTH,
             Direction.SOUTH: Direction.NORTH,
@@ -311,13 +312,13 @@ class GameEngine:
 
     def init_map(self):
         self.current_room = "Cell"
-        prison_cell = Room(description="A cold, dark cell. The door is locked.", item='key', locked=True)
-        hallway = Room(description="A dim hallway that leads to a heavy iron gate that acts as a roadblock to the northword path.", encounter=True)
-        armory = Room(description="A room filled with rusty weapons were a glowing staff beckons you to grab it.", items='magic staff', encounter=True)
-        dungeon_exit = Room(description="A ancient door that is riddled with arcane symbols, it seems to be locked with a magical seal.")
+        prison_cell = Room(name="Cell", description="A cold, dark cell. The door is locked.", item='key', locked=True)
+        hallway = Room(name="Hallway", description="A dim hallway that leads to a heavy iron gate that acts as a roadblock to the northword path.", encounter=True)
+        armory = Room(name="Armory", description="A room filled with rusty weapons were a glowing staff beckons you to grab it.", item='magic staff', encounter=True)
+        dungeon_exit = Room(name="Exit", description="A ancient door that is riddled with arcane symbols, it seems to be locked with a magical seal.")
 
 
-        self.connect_rooms(prison_cell, Direction.EAST, hallway)
+        self.connect_rooms(prison_cell, Direction.EAST, hallway, locked=True)
         self.connect_rooms(hallway, Direction.NORTH, armory)
         self.connect_rooms(armory, Direction.EAST, dungeon_exit)
 
@@ -429,7 +430,7 @@ class GameEngine:
     
     def get_room_status(self) -> str:
         room_status = f"You are in the {self.map.current_room.name}. {self.map.current_room.description}"
-        if "item" in self.map.current_room:
+        if self.map.current_room.item != None:
             room_status += f" You see a {self.map.current_room.item} here."
         return room_status
     
@@ -455,16 +456,17 @@ class GameEngine:
 
     def take(self, item: str) -> str:
         if self.map.current_room.item == item:
-            self.player.inventory.append(game.QuestItem(self.map.current_room.pop("item")))
+            self.player.inventory.append(game.QuestItem(self.map.current_room.item))
+            self.map.current_room.item = None
             return f"you have taken the {item}."
         else:
             return "invalid item, please try again."
         
     def use(self, item: str) -> str:
         if self.player.is_in_inventory(item):
-            if item.lower() == "key" and self.current_room == "Cell":
+            if item.lower() == "key" and self.map.current_room.name == "Cell":
                 self.player.use_item('key')
-                self.map.current_room.connections["east"]["locked"] = False
+                self.map.current_room.connections[Direction.EAST]["locked"] = False
                 self.map.current_room.description = self.map.current_room.description.replace("The door is locked.", "The door is unlocked.")
                 return "You use the key to unlock the cell door."
 
