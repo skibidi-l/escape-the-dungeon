@@ -264,13 +264,13 @@ class GameOverState(GameState):
 
 class Room:
     
-    def __init__(self, name: str, description: str, item: str = None, encounter: bool = False, locked: bool = False):
+    def __init__(self, name: str, description: str, item: str = None, encounter: bool = False, entry_event: callable = None):
         self.name = name
         self.description = description
         self.item = item
         self.encounter = encounter
         self.connections = {}
-        self.locked = locked
+        self.entry_event = entry_event
 
     def connect(self, direction: str, room: Room, locked: bool = False):
         self.connections[direction] = {"room":room, "locked": locked}
@@ -286,7 +286,12 @@ class Direction(Enum):
     WEST = "west"
 
 class Map:
-    
+    reverse_direction = {
+                    Direction.NORTH: Direction.SOUTH,
+                    Direction.SOUTH: Direction.NORTH,
+                    Direction.EAST: Direction.WEST,
+                    Direction.WEST: Direction.EAST
+                }  
     def __init__(self):
         self.rooms = {}
         self.current_room = None
@@ -297,6 +302,19 @@ class Map:
     def get_room(self, name: str) -> Room:
         return self.rooms.get(name)
 
+    def connect_rooms(self, from_room: 'Room', direction: str, to_room: Room, locked: bool = False):
+            from_room.connect(direction, to_room, locked)
+
+            if direction in Map.reverse_direction:
+                to_room.connect(Map.reverse_direction[direction], from_room)
+
+    def unlock_room(self, from_room: 'Room', direction: str):
+        if direction in from_room.connections:
+            from_room.connections[direction]["locked"] = False
+            from_room.description = from_room.description.replace('locked', 'unlocked')
+            if direction in Map.reverse_direction:
+                to_room = from_room.connections[direction]["room"]
+                to_room.connections[Map.reverse_direction[direction]]["locked"] = False
 class GameEngine:
     def connect_rooms(self, from_room: 'Room', direction: str, to_room: Room, locked: bool = False):
         from_room.connect(direction, to_room, locked)
@@ -312,7 +330,7 @@ class GameEngine:
 
     def init_map(self):
         self.current_room = "Cell"
-        prison_cell = Room(name="Cell", description="A cold, dark cell. The door is locked.", item='key', locked=True)
+        prison_cell = Room(name="Cell", description="A cold, dark cell. The door is locked.", item='key')
         hallway = Room(name="Hallway", description="A dim hallway that leads to a heavy iron gate that acts as a roadblock to the northword path.", encounter=True)
         armory = Room(name="Armory", description="A room filled with rusty weapons were a glowing staff beckons you to grab it.", item='magic staff', encounter=True)
         dungeon_exit = Room(name="Exit", description="A ancient door that is riddled with arcane symbols, it seems to be locked with a magical seal.")
@@ -435,11 +453,12 @@ class GameEngine:
         return room_status
     
     def go_to(self, direction: str) -> str:
-        if direction in self.map.current_room.connections:
-            if self.map.current_room.locked:
+        direction_enum = Direction(direction)
+        if direction_enum in self.map.current_room.connections:
+            if self.map.current_room.connections[direction_enum]["locked"]:
                 response = "The door is locked. You need to find a key to open it."
             else:
-                self.map.current_room = self.map.get_room(self.map.current_room.connections[direction])
+                self.map.current_room = self.map.current_room.connections[direction_enum]['room']
                 response = f"You move {direction} to the {self.map.current_room.name}."
                 if self.is_encounter():
                     self.enemy = random.choice(self.monsters)
@@ -536,7 +555,8 @@ class GameEngine:
         response = f"The {self.enemy.name} dropped {looted_items} and {loot_gold} golds! CONGRATS!"
         self.player.inventory.extend(looted_items)
         self.player.gold += loot_gold
-        
+
+        self.map.current_room.encounter = False
         self.enemy = None
         return response
     
